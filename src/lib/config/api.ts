@@ -6,6 +6,7 @@ export const API_CONFIG = {
 // Helper pour construire les URLs de l'API
 export const getApiUrl = (endpoint: string): string => {
   const baseUrl = API_CONFIG.BASE_URL;
+  console.log(baseUrl, endpoint);
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   return `${baseUrl}${cleanEndpoint}`;
 }; 

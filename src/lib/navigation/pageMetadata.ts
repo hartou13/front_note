@@ -31,6 +31,20 @@ export const pageMetadata: Record<string, PageMetadata> = {
     section: 'Principal',
     requiresAuth: true,
   },
+  '/notes': {
+    title: 'Notes',
+    icon: 'FileText',
+    order: 4,
+    section: 'Principal',
+    requiresAuth: true,
+  },
+  '/tag': {
+    title: 'Tags',
+    icon: 'Tag',
+    order: 5,
+    section: 'Principal',
+    requiresAuth: true,
+  },
   '/settings/preferences': {
     title: 'Préférences',
     icon: 'Settings',
@@ -55,13 +69,5 @@ export const pageMetadata: Record<string, PageMetadata> = {
     title: 'Accueil',
     hidden: true, // Redirection automatique
     requiresAuth: false,
-  },
-
-  '/notes': {
-    title: 'Notes',
-    icon: 'FileText',
-    order: 4,
-    section: 'Principal',
-    requiresAuth: true,
   },
 }; 

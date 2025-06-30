@@ -27,6 +27,18 @@ const fileSystemRoutes: FileSystemRoute[] = [
     hasPage: true,
   },
   {
+    path: '/notes',
+    hasPage: true,
+  },
+  {
+    path: '/projects',
+    hasPage: true,
+  },
+  {
+    path: '/tag',
+    hasPage: true,
+  },
+  {
     path: '/settings',
     hasPage: false,
     children: [

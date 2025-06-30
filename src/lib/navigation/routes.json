@@ -38,6 +38,12 @@
       "isProtected": true
     },
     {
+      "path": "/tag",
+      "hasPage": true,
+      "directory": "tag",
+      "isProtected": true
+    },
+    {
       "path": "/settings",
       "hasPage": false,
       "directory": "settings",

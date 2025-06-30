@@ -14,6 +14,7 @@ import {
   Shield,
   Sliders,
   Sparkles,
+  Tag,
   User,
   X
 } from 'lucide-react';
@@ -37,7 +38,8 @@ const iconMap = {
   FolderOpen,
   FileText,
   PocketKnife,
-  Sparkles
+  Sparkles,
+  Tag
 } as const;
 
 interface SidebarProps {
