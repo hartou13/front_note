@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "npm run generate-routes && next build",
+    "build:docker": "npm run generate-routes && next build --no-lint",
     "start": "next start",
     "lint": "next lint",
     "generate-routes": "node src/lib/navigation/buildTimeScanner.js",
