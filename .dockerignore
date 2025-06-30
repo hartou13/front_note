@@ -1,0 +1,33 @@
+# Fichiers et dossiers à ignorer pour Docker
+.dockerignore
+Dockerfile
+Dockerfile.dev
+.git
+.gitignore
+README.md
+.env*.local
+.vercel
+.next
+out
+dist
+
+# Dépendances
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environnement de développement
+.DS_Store
+*.tsbuildinfo
+
+# Logs
+*.log
+logs
+
+# Environnement de test
+coverage
+
+# Fichiers temporaires
+*.tmp
+*.temp 

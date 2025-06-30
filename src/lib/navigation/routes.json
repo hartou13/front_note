@@ -1,0 +1,61 @@
+{
+  "generatedAt": "2025-06-25T15:26:14.477Z",
+  "routes": [
+    {
+      "path": "/",
+      "hasPage": true,
+      "directory": "root",
+      "isProtected": false
+    },
+    {
+      "path": "/login",
+      "hasPage": true,
+      "directory": "login",
+      "isProtected": false
+    },
+    {
+      "path": "/main",
+      "hasPage": true,
+      "directory": "main",
+      "isProtected": true
+    },
+    {
+      "path": "/notes",
+      "hasPage": true,
+      "directory": "notes",
+      "isProtected": true
+    },
+    {
+      "path": "/profile",
+      "hasPage": true,
+      "directory": "profile",
+      "isProtected": true
+    },
+    {
+      "path": "/projects",
+      "hasPage": true,
+      "directory": "projects",
+      "isProtected": true
+    },
+    {
+      "path": "/settings",
+      "hasPage": false,
+      "directory": "settings",
+      "children": [
+        {
+          "path": "/settings/preferences",
+          "hasPage": true,
+          "directory": "preferences",
+          "isProtected": true
+        },
+        {
+          "path": "/settings/security",
+          "hasPage": true,
+          "directory": "security",
+          "isProtected": true
+        }
+      ],
+      "isProtected": true
+    }
+  ]
+}
