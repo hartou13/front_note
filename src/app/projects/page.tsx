@@ -119,18 +119,18 @@ export default function ProjectsPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 p-4 sm:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Mes Projets</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Mes Projets</h1>
             <p className="text-muted-foreground mt-1">
               Gérez vos projets et suivez leur progression
             </p>
           </div>
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             Nouveau Projet
@@ -173,7 +173,7 @@ export default function ProjectsPage() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6 p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
                 {projects.map((project) => {
                   const projectColor = project.color || '#2973B2';
                   const parentProject = findParentProject(project.mother_project_id);

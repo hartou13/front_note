@@ -250,22 +250,22 @@ export default function NotesPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 p-4 sm:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Toutes les notes</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Notes</h1>
+            <p className="text-muted-foreground">
               {filteredNotes.length} note{filteredNotes.length !== 1 ? 's' : ''}
-              {selectedFilterProject && ` dans ${selectedFilterProject.name}`}
+              {selectedProjectFilter && ` dans ${selectedFilterProject?.name}`}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             {/* View Mode Toggle */}
             <div className="flex items-center bg-muted/50 rounded-lg p-1">
               <button
                 onClick={() => setViewMode('list')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${
+                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-colors ${
                   viewMode === 'list'
                     ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
@@ -277,7 +277,7 @@ export default function NotesPage() {
               </button>
               <button
                 onClick={() => setViewMode('calendar')}
-                className={`flex items-center gap-2 px-3 py-2 rounded-md transition-colors ${
+                className={`flex items-center justify-center gap-2 px-3 py-2 rounded-md transition-colors ${
                   viewMode === 'calendar'
                     ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
@@ -291,197 +291,204 @@ export default function NotesPage() {
             
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors w-full sm:w-auto"
             >
               <Plus className="w-4 h-4" />
-              Nouvelle Note
+              Nouvelle note
             </button>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-lg">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-muted/30 rounded-lg">
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm font-medium text-foreground">Filtres :</span>
           </div>
           
-          {/* Project Filter Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-              className="flex items-center gap-2 px-3 py-2 border border-input rounded-lg hover:bg-accent transition-colors text-sm"
-            >
-              <div className="flex items-center gap-2">
-                {selectedFilterProject ? (
-                  <>
-                    <div 
-                      className="w-3 h-3 rounded-full"
-                      style={{ backgroundColor: selectedFilterProject.color }}
-                    />
-                    <span>{selectedFilterProject.name}</span>
-                  </>
-                ) : (
-                  <span className="text-muted-foreground">Tous les projets</span>
-                )}
-              </div>
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            </button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+            {/* Project Filter Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                className="flex items-center justify-between w-full sm:w-auto px-3 py-2 border border-input rounded-lg hover:bg-accent transition-colors text-sm"
+              >
+                <div className="flex items-center gap-2">
+                  {selectedFilterProject ? (
+                    <>
+                      <div 
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: selectedFilterProject.color }}
+                      />
+                      <span>{selectedFilterProject.name}</span>
+                    </>
+                  ) : (
+                    <span className="text-muted-foreground">Tous les projets</span>
+                  )}
+                </div>
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              </button>
 
-            {/* Project Dropdown */}
-            {isFilterDropdownOpen && (
-              <>
-                <div 
-                  className="fixed inset-0 z-40"
-                  onClick={() => setIsFilterDropdownOpen(false)}
-                />
-                <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto min-w-[250px]">
-                  {/* Option "Tous les projets" */}
-                  <button
-                    onClick={() => handleFilterSelect('')}
-                    className={`w-full px-3 py-2 text-left hover:bg-accent transition-colors flex items-center justify-between ${
-                      !selectedProjectFilter ? 'bg-accent' : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full border border-border bg-muted" />
-                      <span className="text-sm">Tous les projets</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {notes?.length || 0} note{(notes?.length || 0) !== 1 ? 's' : ''}
-                    </span>
-                  </button>
+              {/* Project Dropdown */}
+              {isFilterDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsFilterDropdownOpen(false)}
+                  />
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto min-w-[250px]">
+                    {/* Option "Tous les projets" */}
+                    <button
+                      onClick={() => handleFilterSelect('')}
+                      className={`w-full px-3 py-2 text-left hover:bg-accent transition-colors flex items-center justify-between ${
+                        !selectedProjectFilter ? 'bg-accent' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full border border-border bg-muted" />
+                        <span className="text-sm">Tous les projets</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {notes?.length || 0} note{(notes?.length || 0) !== 1 ? 's' : ''}
+                      </span>
+                    </button>
 
-                  {/* Options des projets */}
-                  {projects && projects.length > 0 ? (
-                    projects
-                      .filter(project => project.is_active)
-                      .map((project) => {
-                        const notesCount = getNotesCountByProject(project.id);
-                        return (
+                    {/* Options des projets */}
+                    {projects && projects.length > 0 ? (
+                      projects
+                        .filter(project => project.is_active)
+                        .map((project) => {
+                          const notesCount = getNotesCountByProject(project.id);
+                          return (
+                            <button
+                              key={project.id}
+                              onClick={() => handleFilterSelect(project.id)}
+                              className={`w-full px-3 py-2 text-left hover:bg-accent transition-colors flex items-center justify-between ${
+                                selectedProjectFilter === project.id ? 'bg-accent' : ''
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                <div 
+                                  className="w-3 h-3 rounded-full flex-shrink-0"
+                                  style={{ backgroundColor: project.color }}
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-sm font-medium truncate block">{project.name}</span>
+                                  {project.description && (
+                                    <p className="text-xs text-muted-foreground truncate">
+                                      {project.description}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              <span className="text-xs text-muted-foreground ml-2">
+                                {notesCount} note{notesCount !== 1 ? 's' : ''}
+                              </span>
+                            </button>
+                          );
+                        })
+                    ) : (
+                      <div className="px-3 py-2 text-sm text-muted-foreground">
+                        Aucun projet disponible
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Tags Filter Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsTagDropdownOpen(!isTagDropdownOpen)}
+                className="flex items-center justify-between w-full sm:w-auto px-3 py-2 border border-input rounded-lg hover:bg-accent transition-colors text-sm"
+              >
+                <div className="flex items-center gap-2">
+                  <TagIcon className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    {selectedTags.length > 0 ? `${selectedTags.length} tag${selectedTags.length > 1 ? 's' : ''}` : 'Tous les tags'}
+                  </span>
+                </div>
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              </button>
+
+              {/* Tags Dropdown */}
+              {isTagDropdownOpen && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsTagDropdownOpen(false)}
+                  />
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto min-w-[200px]">
+                    {tags.length > 0 ? (
+                      <div className="p-2 space-y-1">
+                        {tags.map((tag) => (
                           <button
-                            key={project.id}
-                            onClick={() => handleFilterSelect(project.id)}
-                            className={`w-full px-3 py-2 text-left hover:bg-accent transition-colors flex items-center justify-between ${
-                              selectedProjectFilter === project.id ? 'bg-accent' : ''
+                            key={tag.id}
+                            onClick={() => handleTagToggle(tag.id)}
+                            className={`w-full px-3 py-2 text-left hover:bg-accent transition-colors rounded flex items-center gap-2 ${
+                              selectedTags.includes(tag.id) ? 'bg-accent' : ''
                             }`}
                           >
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <div 
-                                className="w-3 h-3 rounded-full flex-shrink-0"
-                                style={{ backgroundColor: project.color }}
-                              />
-                              <div className="flex-1 min-w-0">
-                                <span className="text-sm font-medium truncate block">{project.name}</span>
-                                {project.description && (
-                                  <p className="text-xs text-muted-foreground truncate">
-                                    {project.description}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                            <span className="text-xs text-muted-foreground ml-2">
-                              {notesCount} note{notesCount !== 1 ? 's' : ''}
-                            </span>
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: tag.color }}
+                            />
+                            <span className="text-sm">{tag.name}</span>
+                            {selectedTags.includes(tag.id) && (
+                              <div className="ml-auto text-primary">✓</div>
+                            )}
                           </button>
-                        );
-                      })
-                  ) : (
-                    <div className="px-3 py-2 text-sm text-muted-foreground">
-                      Aucun projet disponible
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Tags Filter Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setIsTagDropdownOpen(!isTagDropdownOpen)}
-              className="flex items-center gap-2 px-3 py-2 border border-input rounded-lg hover:bg-accent transition-colors text-sm"
-            >
-              <TagIcon className="w-4 h-4 text-muted-foreground" />
-              <span className="text-muted-foreground">
-                {selectedTags.length > 0 ? `${selectedTags.length} tag${selectedTags.length > 1 ? 's' : ''}` : 'Tous les tags'}
-              </span>
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            </button>
-
-            {/* Tags Dropdown */}
-            {isTagDropdownOpen && (
-              <>
-                <div 
-                  className="fixed inset-0 z-40"
-                  onClick={() => setIsTagDropdownOpen(false)}
-                />
-                <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto min-w-[200px]">
-                  {tags.length > 0 ? (
-                    <div className="p-2 space-y-1">
-                      {tags.map((tag) => (
-                        <button
-                          key={tag.id}
-                          onClick={() => handleTagToggle(tag.id)}
-                          className={`w-full px-3 py-2 text-left hover:bg-accent transition-colors rounded flex items-center gap-2 ${
-                            selectedTags.includes(tag.id) ? 'bg-accent' : ''
-                          }`}
-                        >
-                          <div
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: tag.color }}
-                          />
-                          <span className="text-sm">{tag.name}</span>
-                          {selectedTags.includes(tag.id) && (
-                            <div className="ml-auto text-primary">✓</div>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="px-3 py-2 text-sm text-muted-foreground">
-                      Aucun tag disponible
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Tags sélectionnés */}
-          {selectedTags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {selectedTags.map(tagId => {
-                const tag = tags.find(t => t.id === tagId);
-                return tag ? (
-                  <Badge
-                    key={tagId}
-                    variant="secondary"
-                    className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
-                    onClick={() => handleTagRemove(tagId)}
-                  >
-                    <div
-                      className="w-2 h-2 rounded-full mr-1"
-                      style={{ backgroundColor: tag.color }}
-                    />
-                    {tag.name}
-                    <span className="ml-1">×</span>
-                  </Badge>
-                ) : null;
-              })}
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="px-3 py-2 text-sm text-muted-foreground">
+                        Aucun tag disponible
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
-          )}
 
-          {/* Clear Filter Button */}
-          {(selectedProjectFilter || selectedTags.length > 0) && (
-            <button
-              onClick={clearFilter}
-              className="flex items-center gap-1 px-2 py-1 text-xs bg-muted hover:bg-muted/80 rounded transition-colors"
-            >
-              <X className="w-3 h-3" />
-              Effacer
-            </button>
-          )}
+                      {/* Tags sélectionnés et bouton d'effacement */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+            {/* Tags sélectionnés */}
+            {selectedTags.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {selectedTags.map(tagId => {
+                  const tag = tags.find(t => t.id === tagId);
+                  return tag ? (
+                    <Badge
+                      key={tagId}
+                      variant="secondary"
+                      className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
+                      onClick={() => handleTagRemove(tagId)}
+                    >
+                      <div
+                        className="w-2 h-2 rounded-full mr-1"
+                        style={{ backgroundColor: tag.color }}
+                      />
+                      {tag.name}
+                      <span className="ml-1">×</span>
+                    </Badge>
+                  ) : null;
+                })}
+              </div>
+            )}
+
+            {/* Clear Filter Button */}
+            {(selectedProjectFilter || selectedTags.length > 0) && (
+              <button
+                onClick={clearFilter}
+                className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-muted hover:bg-muted/80 rounded transition-colors w-full sm:w-auto"
+              >
+                <X className="w-3 h-3" />
+                Effacer les filtres
+              </button>
+            )}
+          </div>
+          </div>
         </div>
 
 

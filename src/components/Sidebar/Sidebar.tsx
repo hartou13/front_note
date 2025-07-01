@@ -189,7 +189,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Header */}
       <div className={`flex items-center border-b border-sidebar-border transition-all duration-300 ${
         isCollapsed ? 'justify-center p-4' : 'justify-between p-4'
-      }`}>
+      }`} style={{ height: '65px' }}>
         {!isCollapsed && (
           <div className="flex items-center">
             <div className="hidden lg:flex w-8 h-8 rounded-lg items-center justify-center">

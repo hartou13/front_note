@@ -112,18 +112,18 @@ export default function TagsPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 p-4 sm:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Tags</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Tags</h1>
             <p className="text-muted-foreground">
               Gérez vos tags pour organiser vos notes et projets
             </p>
           </div>
           <button
             onClick={() => setIsCreateDialogOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors w-full sm:w-auto"
           >
             <Plus className="w-4 h-4" />
             Nouveau Tag
@@ -143,18 +143,18 @@ export default function TagsPage() {
         </div>
 
         {/* Liste des tags */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {filteredTags.map((tag) => (
             <div key={tag.id} className="bg-card border border-border rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 flex-1 min-w-0">
                   <div 
-                    className="w-4 h-4 rounded-full border border-border"
+                    className="w-4 h-4 rounded-full border border-border flex-shrink-0"
                     style={{ backgroundColor: tag.color }}
                   />
-                  <h3 className="text-lg font-semibold">{tag.name}</h3>
+                  <h3 className="text-lg font-semibold truncate">{tag.name}</h3>
                 </div>
-                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded flex-shrink-0 ml-2">
                   {new Date(tag.created_at).toLocaleDateString('fr-FR')}
                 </span>
               </div>
@@ -192,7 +192,7 @@ export default function TagsPage() {
             {!searchTerm && (
               <button
                 onClick={() => setIsCreateDialogOpen(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors mx-auto"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors mx-auto w-full sm:w-auto"
               >
                 <Plus className="w-4 h-4" />
                 Créer un tag
