@@ -1,8 +1,9 @@
 'use client';
 
+import { Badge } from '@/components/UI/badge';
 import { useDeleteNote } from '@/lib/hooks/useNotes';
 import { useTags } from '@/lib/hooks/useTags';
-import { Calendar, CalendarDays, ChevronDown, Clock, Edit, Eye, FileText, Filter, List, MoreVertical, Plus, Trash2, X } from 'lucide-react';
+import { Calendar, CalendarDays, ChevronDown, Clock, Edit, Eye, FileText, Filter, List, MoreVertical, Plus, Tag as TagIcon, Trash2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AppLayout } from '../../components/Layout/AppLayout';
@@ -17,8 +18,10 @@ export default function NotesPage() {
   const [deletingNote, setDeletingNote] = useState<Note | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedProjectFilter, setSelectedProjectFilter] = useState<string>('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [untrucatedNotes, setUntrucatedNotes] = useState<string[]>([]);
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+  const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [isModalEditing, setIsModalEditing] = useState<boolean>(true);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
@@ -47,7 +50,7 @@ export default function NotesPage() {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffDays === 1) {
-      return 'Aujourd&apos;hui';
+      return 'Aujourd\'hui';
     } else if (diffDays === 2) {
       return 'Hier';
     } else if (diffDays <= 7) {
@@ -74,10 +77,18 @@ export default function NotesPage() {
     return content.substring(0, maxLength) + '...';
   };
 
-  // Filtrer les notes selon le projet sélectionné
+  // Filtrer les notes selon le projet sélectionné et les tags
   const filteredNotes = notes?.filter(note => {
-    if (!selectedProjectFilter) return true;
-    return note.project_id === selectedProjectFilter;
+    // Filtre par projet
+    const matchesProject = !selectedProjectFilter || note.project_id === selectedProjectFilter;
+    
+    // Filtre par tags
+    const matchesTags = selectedTags.length === 0 || 
+                       selectedTags.some(tagId => 
+                         note.tags?.some(noteTag => noteTag.tag_id === tagId)
+                       );
+    
+    return matchesProject && matchesTags;
   }) || [];
 
   // Trouver le projet sélectionné pour le filtre
@@ -95,6 +106,19 @@ export default function NotesPage() {
 
   const clearFilter = () => {
     setSelectedProjectFilter('');
+    setSelectedTags([]);
+  };
+
+  const handleTagToggle = (tagId: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tagId) 
+        ? prev.filter(id => id !== tagId)
+        : [...prev, tagId]
+    );
+  };
+
+  const handleTagRemove = (tagId: string) => {
+    setSelectedTags(prev => prev.filter(id => id !== tagId));
   };
 
   const handleMenuToggle = (noteId: string, event: React.MouseEvent) => {
@@ -304,7 +328,7 @@ export default function NotesPage() {
               <ChevronDown className="w-4 h-4 text-muted-foreground" />
             </button>
 
-            {/* Dropdown */}
+            {/* Project Dropdown */}
             {isFilterDropdownOpen && (
               <>
                 <div 
@@ -372,8 +396,84 @@ export default function NotesPage() {
             )}
           </div>
 
+          {/* Tags Filter Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setIsTagDropdownOpen(!isTagDropdownOpen)}
+              className="flex items-center gap-2 px-3 py-2 border border-input rounded-lg hover:bg-accent transition-colors text-sm"
+            >
+              <TagIcon className="w-4 h-4 text-muted-foreground" />
+              <span className="text-muted-foreground">
+                {selectedTags.length > 0 ? `${selectedTags.length} tag${selectedTags.length > 1 ? 's' : ''}` : 'Tous les tags'}
+              </span>
+              <ChevronDown className="w-4 h-4 text-muted-foreground" />
+            </button>
+
+            {/* Tags Dropdown */}
+            {isTagDropdownOpen && (
+              <>
+                <div 
+                  className="fixed inset-0 z-40"
+                  onClick={() => setIsTagDropdownOpen(false)}
+                />
+                <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto min-w-[200px]">
+                  {tags.length > 0 ? (
+                    <div className="p-2 space-y-1">
+                      {tags.map((tag) => (
+                        <button
+                          key={tag.id}
+                          onClick={() => handleTagToggle(tag.id)}
+                          className={`w-full px-3 py-2 text-left hover:bg-accent transition-colors rounded flex items-center gap-2 ${
+                            selectedTags.includes(tag.id) ? 'bg-accent' : ''
+                          }`}
+                        >
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: tag.color }}
+                          />
+                          <span className="text-sm">{tag.name}</span>
+                          {selectedTags.includes(tag.id) && (
+                            <div className="ml-auto text-primary">✓</div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">
+                      Aucun tag disponible
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Tags sélectionnés */}
+          {selectedTags.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {selectedTags.map(tagId => {
+                const tag = tags.find(t => t.id === tagId);
+                return tag ? (
+                  <Badge
+                    key={tagId}
+                    variant="secondary"
+                    className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
+                    onClick={() => handleTagRemove(tagId)}
+                  >
+                    <div
+                      className="w-2 h-2 rounded-full mr-1"
+                      style={{ backgroundColor: tag.color }}
+                    />
+                    {tag.name}
+                    <span className="ml-1">×</span>
+                  </Badge>
+                ) : null;
+              })}
+            </div>
+          )}
+
           {/* Clear Filter Button */}
-          {selectedProjectFilter && (
+          {(selectedProjectFilter || selectedTags.length > 0) && (
             <button
               onClick={clearFilter}
               className="flex items-center gap-1 px-2 py-1 text-xs bg-muted hover:bg-muted/80 rounded transition-colors"
@@ -409,14 +509,14 @@ export default function NotesPage() {
               <div className="text-center py-12">
                 <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-foreground mb-2">
-                  {selectedProjectFilter 
-                    ? `Aucune note trouvée dans ${selectedFilterProject?.name}`
+                  {selectedProjectFilter || selectedTags.length > 0
+                    ? 'Aucune note trouvée avec les filtres sélectionnés'
                     : 'Aucune note trouvée'
                   }
                 </h3>
                 <p className="text-muted-foreground mb-6">
-                  {selectedProjectFilter 
-                    ? 'Créez votre première note pour ce projet'
+                  {selectedProjectFilter || selectedTags.length > 0
+                    ? 'Essayez de modifier vos filtres ou créez une nouvelle note'
                     : 'Créez votre première note pour commencer'
                   }
                 </p>
