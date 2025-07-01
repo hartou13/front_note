@@ -1,5 +1,7 @@
 'use client';
 
+import { useDeleteNote } from '@/lib/hooks/useNotes';
+import { useTags } from '@/lib/hooks/useTags';
 import { Calendar, CalendarDays, ChevronDown, Clock, Edit, Eye, FileText, Filter, List, MoreVertical, Plus, Trash2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -20,10 +22,13 @@ export default function NotesPage() {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [isModalEditing, setIsModalEditing] = useState<boolean>(true);
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+
   const router = useRouter();
   
   const { data: notes, isLoading: notesLoading, error } = useNotes();
   const { data: projects } = useProjects();
+  const { data: tags = [] } = useTags();
+  const deleteNoteMutation = useDeleteNote();
 
   useEffect(() => {
     // Vérifier si l'utilisateur est connecté
@@ -42,7 +47,7 @@ export default function NotesPage() {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
     if (diffDays === 1) {
-      return 'Aujourd\'hui';
+      return 'Aujourd&apos;hui';
     } else if (diffDays === 2) {
       return 'Hier';
     } else if (diffDays <= 7) {
@@ -184,13 +189,6 @@ export default function NotesPage() {
     });
   };
 
-  const formatCalendarDate = (date: Date) => {
-    return date.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short'
-    });
-  };
-
   const goToPreviousMonth = () => {
     setCurrentMonth(prev => {
       if (prev.month === 0) {
@@ -212,6 +210,8 @@ export default function NotesPage() {
   const goToToday = () => {
     setCurrentMonth(getCurrentMonth());
   };
+
+
 
   if (isLoading) {
     return (
@@ -384,6 +384,8 @@ export default function NotesPage() {
           )}
         </div>
 
+
+
         {/* Messages d'erreur */}
         {error && (
           <div className="p-4 bg-destructive/10 border border-destructive rounded-lg">
@@ -508,6 +510,29 @@ export default function NotesPage() {
                               </>
                             )}
                           </div>
+                          
+                          {/* Tags de la note */}
+                          {note.tags && note.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {note.tags.map((noteTag) => (
+                                <span
+                                  key={noteTag.id}
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full border"
+                                  style={{ 
+                                    backgroundColor: `${noteTag.tag.color}20`,
+                                    borderColor: noteTag.tag.color,
+                                    color: noteTag.tag.color
+                                  }}
+                                >
+                                  <div
+                                    className="w-2 h-2 rounded-full"
+                                    style={{ backgroundColor: noteTag.tag.color }}
+                                  />
+                                  {noteTag.tag.name}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
                         {/* Date et heure */}

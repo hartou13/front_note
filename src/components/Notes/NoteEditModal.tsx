@@ -1,9 +1,10 @@
 'use client';
 
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, Search, Tag as TagIcon, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Note, useCreateNote, useUpdateNote } from '../../lib/hooks/useNotes';
+import { Note, Tag, useCreateNote, useUpdateNote } from '../../lib/hooks/useNotes';
 import { useProjects } from '../../lib/hooks/useProjects';
+import { useTags } from '../../lib/hooks/useTags';
 
 interface NoteEditModalProps {
   note: Note | null; // null = création, Note = modification ou affichage
@@ -19,9 +20,13 @@ export const NoteEditModal = ({ note, isOpen, onClose, isEditing, onEditModeChan
     content: '',
     project_id: '',
   });
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [tagSearchTerm, setTagSearchTerm] = useState('');
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
+  const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
 
   const { data: projects } = useProjects();
+  const { data: availableTags = [] } = useTags();
   const updateNoteMutation = useUpdateNote();
   const createNoteMutation = useCreateNote();
 
@@ -39,12 +44,15 @@ export const NoteEditModal = ({ note, isOpen, onClose, isEditing, onEditModeChan
         content: note.content,
         project_id: note.project_id,
       });
+      // Extraire les IDs des tags du nouveau format
+      setSelectedTags(note.tags?.map(noteTag => noteTag.tag_id) || []);
     } else {
       setFormData({
         title: '',
         content: '',
         project_id: projects && projects.length > 0 ? projects[0].id : '',
       });
+      setSelectedTags([]);
     }
   }, [note, projects]);
 
@@ -59,6 +67,7 @@ export const NoteEditModal = ({ note, isOpen, onClose, isEditing, onEditModeChan
       title: formData.title.trim(),
       content: formData.content.trim(),
       project_id: formData.project_id,
+      tags: selectedTags,
     };
 
     try {
@@ -91,6 +100,25 @@ export const NoteEditModal = ({ note, isOpen, onClose, isEditing, onEditModeChan
     }));
     setIsProjectDropdownOpen(false);
   };
+
+  const handleRemoveTag = (tagId: string) => {
+    setSelectedTags(prev => prev.filter(id => id !== tagId));
+  };
+
+  const handleSelectTag = (tag: Tag) => {
+    const isAlreadySelected = selectedTags.includes(tag.id);
+    if (!isAlreadySelected) {
+      setSelectedTags(prev => [...prev, tag.id]);
+    }
+    setIsTagDropdownOpen(false);
+    setTagSearchTerm('');
+  };
+
+  // Filtrer les tags selon la recherche
+  const filteredTags = availableTags.filter(tag =>
+    tag.name.toLowerCase().includes(tagSearchTerm.toLowerCase()) &&
+    !selectedTags.includes(tag.id)
+  );
 
   const selectedProject = projects?.find(p => p.id === formData.project_id);
 
@@ -192,6 +220,114 @@ export const NoteEditModal = ({ note, isOpen, onClose, isEditing, onEditModeChan
                 </>
               )}
             </div>
+          </div>
+
+          {/* Tags */}
+          <div>
+            <label className="block text-sm font-medium text-card-foreground mb-2">
+              Tags
+            </label>
+            
+            {/* Tags sélectionnés */}
+            {selectedTags.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {selectedTags.map((tagId) => {
+                  const tag = availableTags.find(t => t.id === tagId);
+                  if (!tag) return null;
+                  
+                  return (
+                    <div
+                      key={tagId}
+                      className="flex items-center gap-2 px-3 py-1 bg-muted rounded-lg text-sm"
+                    >
+                      <div 
+                        className="w-3 h-3 rounded-full border border-border"
+                        style={{ backgroundColor: tag.color }}
+                      />
+                      <span>{tag.name}</span>
+                      {!isReadOnlyMode && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTag(tagId)}
+                          className="text-muted-foreground hover:text-destructive transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Sélection de tags */}
+            {!isReadOnlyMode && (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsTagDropdownOpen(!isTagDropdownOpen)}
+                  className="w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <TagIcon className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">
+                      {selectedTags.length > 0 ? `${selectedTags.length} tag(s) sélectionné(s)` : 'Sélectionner des tags'}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                </button>
+
+                {/* Dropdown des tags */}
+                {isTagDropdownOpen && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40"
+                      onClick={() => setIsTagDropdownOpen(false)}
+                    />
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                      {/* Barre de recherche */}
+                      <div className="p-3 border-b border-border">
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                          <input
+                            type="text"
+                            value={tagSearchTerm}
+                            onChange={(e) => setTagSearchTerm(e.target.value)}
+                            placeholder="Rechercher des tags..."
+                            className="w-full pl-10 pr-4 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground text-sm"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Liste des tags */}
+                      <div className="max-h-32 overflow-y-auto">
+                        {filteredTags.length > 0 ? (
+                          filteredTags.map((tag) => (
+                            <button
+                              key={tag.id}
+                              type="button"
+                              onClick={() => handleSelectTag(tag)}
+                              className="w-full px-3 py-2 text-left hover:bg-accent transition-colors flex items-center gap-2"
+                            >
+                              <div 
+                                className="w-3 h-3 rounded-full border border-border"
+                                style={{ backgroundColor: tag.color }}
+                              />
+                              <span className="text-sm">{tag.name}</span>
+                            </button>
+                          ))
+                        ) : (
+                          <div className="px-3 py-2 text-sm text-muted-foreground">
+                            {tagSearchTerm ? 'Aucun tag trouvé' : 'Aucun tag disponible'}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Contenu de la note */}

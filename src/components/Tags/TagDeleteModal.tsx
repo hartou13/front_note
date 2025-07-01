@@ -52,8 +52,17 @@ export const TagDeleteModal = ({ tag, isOpen, onClose }: TagDeleteModalProps) =>
           </p>
           
           <div className="bg-muted/50 rounded-lg p-3 mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div 
+                className="w-4 h-4 rounded-full border border-border"
+                style={{ backgroundColor: tag.color }}
+              />
+              <p className="text-sm text-muted-foreground">
+                <strong>Nom du tag :</strong> {tag.name}
+              </p>
+            </div>
             <p className="text-sm text-muted-foreground">
-              <strong>Nom du tag :</strong> {tag.name}
+              <strong>Couleur :</strong> {tag.color}
             </p>
             <p className="text-sm text-muted-foreground mt-1">
               <strong>Créé le :</strong> {new Date(tag.created_at).toLocaleDateString('fr-FR')}

@@ -2,7 +2,8 @@
 
 import { AppLayout } from '@/components/Layout/AppLayout';
 import { TagDeleteModal } from '@/components/Tags/TagDeleteModal';
-import { Tag, useCreateTag, useDeleteTag, useTags, useUpdateTag } from '@/lib/hooks/useTags';
+import { ColorPicker } from '@/components/UI/ColorPicker';
+import { Tag, useCreateTag, useTags, useUpdateTag } from '@/lib/hooks/useTags';
 import { Edit, Plus, Search, Tag as TagIcon, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -14,21 +15,26 @@ export default function TagsPage() {
   const [editingTag, setEditingTag] = useState<Tag | null>(null);
   const [tagToDelete, setTagToDelete] = useState<Tag | null>(null);
   const [newTagName, setNewTagName] = useState('');
+  const [newTagColor, setNewTagColor] = useState('#2973B2');
   const [editTagName, setEditTagName] = useState('');
+  const [editTagColor, setEditTagColor] = useState('#2973B2');
 
   // Hooks TanStack Query
   const { data: tags = [], isLoading, error } = useTags();
   const createTagMutation = useCreateTag();
   const updateTagMutation = useUpdateTag();
-  const deleteTagMutation = useDeleteTag();
 
   // Créer un nouveau tag
   const handleCreateTag = async () => {
     if (!newTagName.trim()) return;
 
     try {
-      await createTagMutation.mutateAsync({ name: newTagName.trim() });
+      await createTagMutation.mutateAsync({ 
+        name: newTagName.trim(),
+        color: newTagColor
+      });
       setNewTagName('');
+      setNewTagColor('#2973B2');
       setIsCreateDialogOpen(false);
     } catch (error) {
       console.error('Erreur lors de la création du tag:', error);
@@ -42,10 +48,14 @@ export default function TagsPage() {
     try {
       await updateTagMutation.mutateAsync({
         id: editingTag.id,
-        data: { name: editTagName.trim() }
+        data: { 
+          name: editTagName.trim(),
+          color: editTagColor
+        }
       });
       setEditingTag(null);
       setEditTagName('');
+      setEditTagColor('#2973B2');
       setIsEditDialogOpen(false);
     } catch (error) {
       console.error('Erreur lors de la mise à jour du tag:', error);
@@ -68,6 +78,7 @@ export default function TagsPage() {
   const openEditDialog = (tag: Tag) => {
     setEditingTag(tag);
     setEditTagName(tag.name);
+    setEditTagColor(tag.color);
     setIsEditDialogOpen(true);
   };
 
@@ -137,7 +148,10 @@ export default function TagsPage() {
             <div key={tag.id} className="bg-card border border-border rounded-lg p-4 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center space-x-2">
-                  <TagIcon className="w-4 h-4 text-primary" />
+                  <div 
+                    className="w-4 h-4 rounded-full border border-border"
+                    style={{ backgroundColor: tag.color }}
+                  />
                   <h3 className="text-lg font-semibold">{tag.name}</h3>
                 </div>
                 <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
@@ -208,6 +222,15 @@ export default function TagsPage() {
                     disabled={createTagMutation.isPending}
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Couleur du tag
+                  </label>
+                  <ColorPicker
+                    value={newTagColor}
+                    onChange={setNewTagColor}
+                  />
+                </div>
                 <div className="flex justify-end space-x-2">
                   <button
                     onClick={() => setIsCreateDialogOpen(false)}
@@ -255,6 +278,15 @@ export default function TagsPage() {
                     onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleUpdateTag()}
                     className="w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground"
                     disabled={updateTagMutation.isPending}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Couleur du tag
+                  </label>
+                  <ColorPicker
+                    value={editTagColor}
+                    onChange={setEditTagColor}
                   />
                 </div>
                 <div className="flex justify-end space-x-2">

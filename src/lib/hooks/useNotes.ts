@@ -1,6 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getApiUrl } from '../config/api';
 
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
+  created_at: string;
+  user_id: string;
+}
+
+export interface NoteTag {
+  id: string;
+  tag_id: string;
+  note_id: string;
+  tag: Tag;
+}
+
 export interface Note {
   id: string;
   title: string;
@@ -8,6 +23,7 @@ export interface Note {
   project_id: string;
   user_id: string;
   created_at: string;
+  tags?: NoteTag[];
   project: {
     id: string;
     name: string;
@@ -24,12 +40,14 @@ interface CreateNoteData {
   title: string;
   content: string;
   project_id: string;
+  tags?: string[]; // IDs des tags
 }
 
 interface UpdateNoteData {
   title: string;
   content: string;
   project_id: string;
+  tags?: string[]; // IDs des tags
 }
 
 // Fonctions API

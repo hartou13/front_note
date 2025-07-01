@@ -4,16 +4,19 @@ import { getApiUrl } from '../config/api';
 export interface Tag {
   id: string;
   name: string;
+  color: string;
   created_at: string;
   user_id: string;
 }
 
 interface CreateTagData {
   name: string;
+  color: string;
 }
 
 interface UpdateTagData {
   name: string;
+  color: string;
 }
 
 // Fonctions API
