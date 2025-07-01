@@ -14,8 +14,23 @@ interface AppLayoutProps {
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [userInitial, setUserInitial] = useState('U');
+  const [userName, setUserName] = useState('Utilisateur');
   const pathname = usePathname();
   const logoutMutation = useLogout();
+
+  // Charger les données utilisateur depuis localStorage
+  useEffect(() => {
+    const firstName = localStorage.getItem('first_name');
+    const storedName = localStorage.getItem('firstName');
+    
+    if (firstName) {
+      setUserInitial(firstName.charAt(0));
+    }
+    if (storedName) {
+      setUserName(storedName);
+    }
+  }, []);
 
   // Fermer la sidebar mobile lors du redimensionnement vers desktop
   useEffect(() => {
@@ -106,11 +121,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
               <div className="hidden sm:flex items-center space-x-3">
                 <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
                   <span className="text-sm font-medium text-primary">
-                    {localStorage.getItem('first_name')?.charAt(0) || 'U'}
+                    {userInitial}
                   </span>
                 </div>
                 <span className="hidden md:block text-sm text-muted-foreground">
-                  {localStorage.getItem('firstName') || 'Utilisateur'}
+                  {userName}
                 </span>
               </div>
 
