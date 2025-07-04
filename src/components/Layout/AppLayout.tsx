@@ -58,6 +58,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   // Obtenir le titre dynamique basé sur la route actuelle
   const getCurrentPageTitle = () => {
+    // Vérifier que le pathname est valide
+    if (!pathname || pathname === '') {
+      return 'Vela';
+    }
+
+    // Vérifier d'abord les métadonnées exactes
     const currentPageMeta = pageMetadata[pathname];
     if (currentPageMeta?.title) {
       return currentPageMeta.title;
@@ -67,20 +73,32 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
     if (pathname === '/') return 'Accueil';
     
     const segments = pathname.split('/').filter(Boolean);
+    if (segments.length === 0) {
+      return 'Vela';
+    }
+    
     const lastSegment = segments[segments.length - 1];
     
-    return lastSegment
+    const generatedTitle = lastSegment
       .split('-')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
+    
+    return generatedTitle || 'Vela';
   };
 
   const pageTitle = getCurrentPageTitle();
 
-  // Mettre à jour le titre de la page
+  // Mettre à jour le titre de la page avec une logique plus robuste
   useEffect(() => {
-    document.title = `${pageTitle} - Vela`;
-  }, [pageTitle]);
+    // Éviter de mettre à jour le titre si c'est déjà le bon
+    const currentTitle = document.title;
+    const newTitle = pageTitle ? `${pageTitle} - Vela` : 'Vela';
+    
+    if (currentTitle !== newTitle) {
+      document.title = newTitle;
+    }
+  }, [pageTitle, pathname]);
 
   return (
     <div className="min-h-screen bg-background flex">
