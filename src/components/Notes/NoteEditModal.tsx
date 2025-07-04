@@ -2,6 +2,7 @@
 
 import { ChevronDown, Search, Tag as TagIcon, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { LinkifyText } from '../../components/UI/LinkifyText';
 import { Note, Tag, useCreateNote, useUpdateNote } from '../../lib/hooks/useNotes';
 import { useProjects } from '../../lib/hooks/useProjects';
 import { useTags } from '../../lib/hooks/useTags';
@@ -19,6 +20,7 @@ export const NoteEditModal = ({ note, isOpen, onClose, isEditing, onEditModeChan
     title: '',
     content: '',
     project_id: '',
+    hidden: false,
   });
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [tagSearchTerm, setTagSearchTerm] = useState('');
@@ -43,6 +45,7 @@ export const NoteEditModal = ({ note, isOpen, onClose, isEditing, onEditModeChan
         title: note.title,
         content: note.content,
         project_id: note.project_id,
+        hidden: note.hidden,
       });
       // Extraire les IDs des tags du nouveau format
       setSelectedTags(note.tags?.map(noteTag => noteTag.tag_id) || []);
@@ -51,6 +54,7 @@ export const NoteEditModal = ({ note, isOpen, onClose, isEditing, onEditModeChan
         title: '',
         content: '',
         project_id: projects && projects.length > 0 ? projects[0].id : '',
+        hidden: false,
       });
       setSelectedTags([]);
     }
@@ -68,6 +72,7 @@ export const NoteEditModal = ({ note, isOpen, onClose, isEditing, onEditModeChan
       content: formData.content.trim(),
       project_id: formData.project_id,
       tags: selectedTags,
+      hidden: formData.hidden,
     };
 
     try {
@@ -330,22 +335,47 @@ export const NoteEditModal = ({ note, isOpen, onClose, isEditing, onEditModeChan
             )}
           </div>
 
+          {/* Option pour masquer la note */}
+          {!isReadOnlyMode && (
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="hidden"
+                name="hidden"
+                checked={formData.hidden}
+                onChange={(e) => setFormData(prev => ({ ...prev, hidden: e.target.checked }))}
+                className="w-4 h-4 text-primary bg-background border-border rounded focus:ring-primary focus:ring-2"
+              />
+              <label htmlFor="hidden" className="text-sm text-card-foreground cursor-pointer">
+                Masquer le contenu de cette note
+              </label>
+            </div>
+          )}
+
           {/* Contenu de la note */}
           <div>
             <label htmlFor="content" className="block text-sm font-medium text-card-foreground mb-2">
               Contenu *
             </label>
-            <textarea
-              id="content"
-              name="content"
-              value={formData.content}
-              onChange={handleInputChange}
-              required
-              rows={8}
-              disabled={isReadOnlyMode}
-              className="w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground resize-none disabled:opacity-50 disabled:cursor-not-allowed"
-              placeholder="Écrivez le contenu de votre note..."
-            />
+            {isReadOnlyMode ? (
+              <div className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground min-h-[200px] whitespace-pre-wrap">
+                <LinkifyText 
+                  text={formData.content}
+                  className="text-foreground"
+                />
+              </div>
+            ) : (
+              <textarea
+                id="content"
+                name="content"
+                value={formData.content}
+                onChange={handleInputChange}
+                required
+                rows={8}
+                className="w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground resize-none"
+                placeholder="Écrivez le contenu de votre note..."
+              />
+            )}
           </div>
 
           {/* Messages d'erreur */}

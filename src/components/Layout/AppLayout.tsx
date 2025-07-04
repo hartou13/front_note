@@ -75,6 +75,13 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       .join(' ');
   };
 
+  const pageTitle = getCurrentPageTitle();
+
+  // Mettre à jour le titre de la page
+  useEffect(() => {
+    document.title = `${pageTitle} - Vela`;
+  }, [pageTitle]);
+
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
@@ -111,7 +118,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
               {/* Page title - Dynamic based on route */}
               <h1 className="text-xl font-semibold text-foreground">
-                {getCurrentPageTitle()}
+                {pageTitle}
               </h1>
             </div>
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { Badge } from '@/components/UI/badge';
+import { LinkifyText } from '@/components/UI/LinkifyText';
 import { useDeleteNote } from '@/lib/hooks/useNotes';
 import { useTags } from '@/lib/hooks/useTags';
 import { Calendar, CalendarDays, ChevronDown, Clock, Edit, Eye, FileText, Filter, List, MoreVertical, Plus, Tag as TagIcon, Trash2, X } from 'lucide-react';
@@ -451,43 +452,43 @@ export default function NotesPage() {
               )}
             </div>
 
-                      {/* Tags sélectionnés et bouton d'effacement */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
-            {/* Tags sélectionnés */}
-            {selectedTags.length > 0 && (
-              <div className="flex flex-wrap gap-1">
-                {selectedTags.map(tagId => {
-                  const tag = tags.find(t => t.id === tagId);
-                  return tag ? (
-                    <Badge
-                      key={tagId}
-                      variant="secondary"
-                      className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
-                      onClick={() => handleTagRemove(tagId)}
-                    >
-                      <div
-                        className="w-2 h-2 rounded-full mr-1"
-                        style={{ backgroundColor: tag.color }}
-                      />
-                      {tag.name}
-                      <span className="ml-1">×</span>
-                    </Badge>
-                  ) : null;
-                })}
-              </div>
-            )}
+            {/* Tags sélectionnés et bouton d'effacement */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+              {/* Tags sélectionnés */}
+              {selectedTags.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {selectedTags.map(tagId => {
+                    const tag = tags.find(t => t.id === tagId);
+                    return tag ? (
+                      <Badge
+                        key={tagId}
+                        variant="secondary"
+                        className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground"
+                        onClick={() => handleTagRemove(tagId)}
+                      >
+                        <div
+                          className="w-2 h-2 rounded-full mr-1"
+                          style={{ backgroundColor: tag.color }}
+                        />
+                        {tag.name}
+                        <span className="ml-1">×</span>
+                      </Badge>
+                    ) : null;
+                  })}
+                </div>
+              )}
 
-            {/* Clear Filter Button */}
-            {(selectedProjectFilter || selectedTags.length > 0) && (
-              <button
-                onClick={clearFilter}
-                className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-muted hover:bg-muted/80 rounded transition-colors w-full sm:w-auto"
-              >
-                <X className="w-3 h-3" />
-                Effacer les filtres
-              </button>
-            )}
-          </div>
+              {/* Clear Filter Button */}
+              {(selectedProjectFilter || selectedTags.length > 0) && (
+                <button
+                  onClick={clearFilter}
+                  className="flex items-center justify-center gap-1 px-3 py-2 text-sm bg-muted hover:bg-muted/80 rounded transition-colors w-full sm:w-auto"
+                >
+                  <X className="w-3 h-3" />
+                  Effacer les filtres
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -604,7 +605,12 @@ export default function NotesPage() {
                           <p className={`text-sm text-muted-foreground ${
                             untrucatedNotes.includes(note.id) ? '' : 'line-clamp-1'
                           }`}>
-                            {untrucatedNotes.includes(note.id) ? note.content : truncateContent(note.content)}
+                            {!note.hidden && (
+                              <LinkifyText 
+                                text={untrucatedNotes.includes(note.id) ? note.content : truncateContent(note.content)}
+                                className="text-muted-foreground"
+                              />
+                            )}
                           </p>
                           
                           {/* Informations du projet */}
@@ -753,7 +759,10 @@ export default function NotesPage() {
                                 {note.title}
                               </div>
                               <div className="text-muted-foreground truncate">
-                                {note.project?.name}
+                                <LinkifyText 
+                                  text={note.project?.name || ''}
+                                  className="text-muted-foreground"
+                                />
                               </div>
                             </div>
                           ))}

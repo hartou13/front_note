@@ -23,6 +23,7 @@ export interface Note {
   project_id: string;
   user_id: string;
   created_at: string;
+  hidden: boolean;
   tags?: NoteTag[];
   project: {
     id: string;
@@ -40,6 +41,7 @@ interface CreateNoteData {
   title: string;
   content: string;
   project_id: string;
+  hidden?: boolean;
   tags?: string[]; // IDs des tags
 }
 
@@ -47,6 +49,7 @@ interface UpdateNoteData {
   title: string;
   content: string;
   project_id: string;
+  hidden?: boolean;
   tags?: string[]; // IDs des tags
 }
 
