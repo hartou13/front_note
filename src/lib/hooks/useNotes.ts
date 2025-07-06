@@ -37,6 +37,15 @@ export interface Note {
   };
 }
 
+export interface NotesResponse {
+  data: Note[];
+  pagination: {
+    total: number;
+    page: number;
+    pageSize: number;
+  };
+}
+
 interface CreateNoteData {
   title: string;
   content: string;
@@ -53,15 +62,40 @@ interface UpdateNoteData {
   tags?: string[]; // IDs des tags
 }
 
+interface NotesFilters {
+  page?: number;
+  project_id?: string;
+  tag_ids?: string[];
+}
+
 // Fonctions API
-const fetchNotes = async (): Promise<Note[]> => {
+const fetchNotes = async (filters: NotesFilters = {}): Promise<NotesResponse> => {
   const token = localStorage.getItem('token');
   
   if (!token) {
     throw new Error('Token manquant');
   }
 
-  const response = await fetch(getApiUrl('/note'), {
+  // Construire les paramètres de requête
+  const params = new URLSearchParams();
+  
+  if (filters.page !== undefined) {
+    params.append('page', filters.page.toString());
+  }
+  
+  if (filters.project_id && filters.project_id !== '') {
+    params.append('project_id', filters.project_id);
+  }
+  
+  if (filters.tag_ids && filters.tag_ids.length > 0) {
+    filters.tag_ids.forEach(tagId => {
+      params.append('tag_ids', tagId);
+    });
+  }
+
+  const url = getApiUrl('/note') + (params.toString() ? `?${params.toString()}` : '');
+
+  const response = await fetch(url, {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -142,11 +176,14 @@ const deleteNote = async (id: string): Promise<void> => {
 };
 
 // Hooks
-export const useNotes = () => {
+export const useNotes = (filters: NotesFilters = {}, customQueryKey?: any[]) => {
   return useQuery({
-    queryKey: ['notes'],
-    queryFn: fetchNotes,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    queryKey: customQueryKey || ['notes', filters],
+    queryFn: () => fetchNotes(filters),
+    staleTime: 0, // Pas de cache, toujours refetch
+    gcTime: 0, // Pas de cache
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
   });
 };
 
