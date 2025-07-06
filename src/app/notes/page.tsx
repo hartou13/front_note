@@ -13,6 +13,7 @@ import { NoteEditModal } from '../../components/Notes/NoteEditModal';
 import { NotesFilters } from '../../components/Notes/NotesFilters';
 import { Note, useNotes } from '../../lib/hooks/useNotes';
 import { useProjects } from '../../lib/hooks/useProjects';
+import { truncateHtmlContent } from '../../lib/utils';
 
 export default function NotesPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -117,10 +118,9 @@ export default function NotesPage() {
     });
   };
 
-  // Fonction pour tronquer le contenu
+  // Fonction pour tronquer le contenu HTML
   const truncateContent = (content: string, maxLength: number = 100) => {
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength) + '...';
+    return truncateHtmlContent(content, maxLength);
   };
 
   // Compter les notes par projet (pour l'affichage dans le dropdown)

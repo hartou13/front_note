@@ -2,7 +2,8 @@
 
 import { ChevronDown, Search, Tag as TagIcon, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { LinkifyText } from '../../components/UI/LinkifyText';
+import { TipTapEditor } from '../../components/UI/TipTapEditor';
+import { TipTapViewer } from '../../components/UI/TipTapViewer';
 import { Note, Tag, useCreateNote, useUpdateNote } from '../../lib/hooks/useNotes';
 import { useProjects } from '../../lib/hooks/useProjects';
 import { useTags } from '../../lib/hooks/useTags';
@@ -98,6 +99,13 @@ export const NoteEditModal = ({ note, isOpen, onClose, isEditing, onEditModeChan
     }));
   };
 
+  const handleContentChange = (content: string) => {
+    setFormData(prev => ({
+      ...prev,
+      content,
+    }));
+  };
+
   const handleProjectSelect = (projectId: string) => {
     setFormData(prev => ({
       ...prev,
@@ -130,8 +138,8 @@ export const NoteEditModal = ({ note, isOpen, onClose, isEditing, onEditModeChan
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-card border border-border rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-card border border-border rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-lg font-semibold text-card-foreground">
@@ -358,22 +366,18 @@ export const NoteEditModal = ({ note, isOpen, onClose, isEditing, onEditModeChan
               Contenu *
             </label>
             {isReadOnlyMode ? (
-              <div className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground min-h-[200px] whitespace-pre-wrap">
-                <LinkifyText 
-                  text={formData.content}
-                  className="text-foreground"
+              <div className="w-full border border-input rounded-lg bg-background text-foreground min-h-[200px]">
+                <TipTapViewer 
+                  content={formData.content}
+                  className="p-4"
                 />
               </div>
             ) : (
-              <textarea
-                id="content"
-                name="content"
-                value={formData.content}
-                onChange={handleInputChange}
-                required
-                rows={8}
-                className="w-full px-3 py-2 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring bg-background text-foreground resize-none"
+              <TipTapEditor
+                content={formData.content}
+                onChange={handleContentChange}
                 placeholder="Écrivez le contenu de votre note..."
+                readOnly={false}
               />
             )}
           </div>
