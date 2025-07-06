@@ -2,7 +2,6 @@
 
 import { Badge } from '@/components/UI/badge';
 import { LinkifyText } from '@/components/UI/LinkifyText';
-import { useDeleteNote } from '@/lib/hooks/useNotes';
 import { useTags } from '@/lib/hooks/useTags';
 import { Calendar, CalendarDays, ChevronDown, Clock, Edit, Eye, FileText, Filter, List, MoreVertical, Plus, Tag as TagIcon, Trash2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -20,7 +19,6 @@ export default function NotesPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedProjectFilter, setSelectedProjectFilter] = useState<string>('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [untrucatedNotes, setUntrucatedNotes] = useState<string[]>([]);
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -32,7 +30,6 @@ export default function NotesPage() {
   const { data: notes, isLoading: notesLoading, error } = useNotes();
   const { data: projects } = useProjects();
   const { data: tags = [] } = useTags();
-  const deleteNoteMutation = useDeleteNote();
 
   useEffect(() => {
     // Vérifier si l'utilisateur est connecté
@@ -127,18 +124,6 @@ export default function NotesPage() {
     event.preventDefault();
     setOpenMenuId(openMenuId === noteId ? null : noteId);
 
-  };
-
-  const handleNoteClick = (noteId: string) => {
-    setUntrucatedNotes(prev => {
-      if (prev.includes(noteId)) {
-        // Si la note est déjà dans la liste, la retirer
-        return prev.filter(id => id !== noteId);
-      } else {
-        // Si la note n'est pas dans la liste, l'ajouter
-        return [...prev, noteId];
-      }
-    });
   };
 
   const handleEdit = (note: Note, event: React.MouseEvent) => {
@@ -580,7 +565,7 @@ export default function NotesPage() {
 
                       {/* Note Item - Style liste horizontale */}
                       <div 
-                        onClick={() => handleNoteClick(note.id)}
+                        onClick={(e) => handleShow(note, e)}
                         className="flex items-center gap-4 p-4 bg-card hover:bg-accent/30 rounded-lg border border-border/50 transition-all duration-200 cursor-pointer"
                       >
                         {/* Indicateur coloré du projet */}
@@ -596,18 +581,15 @@ export default function NotesPage() {
                             <h3 className="text-base font-medium text-foreground truncate flex-1">
                               {note.title}
                             </h3>
-                            {untrucatedNotes.includes(note.id) && (
-                              <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                            )}
                           </div>
                           
                           {/* Contenu tronqué ou complet selon l'état */}
                           <p className={`text-sm text-muted-foreground ${
-                            untrucatedNotes.includes(note.id) ? '' : 'line-clamp-1'
+                            'line-clamp-1'
                           }`}>
                             {!note.hidden && (
                               <LinkifyText 
-                                text={untrucatedNotes.includes(note.id) ? note.content : truncateContent(note.content)}
+                                text={ truncateContent(note.content)}
                                 className="text-muted-foreground"
                               />
                             )}
