@@ -9,9 +9,11 @@ import { Button } from '../UI/button';
 interface TaskFiltersProps {
   filters: {
     project_id: string;
+    priority: number | undefined;
   };
   onFiltersChange: (filters: {
     project_id: string;
+    priority: number | undefined;
   }) => void;
 }
 
@@ -22,23 +24,34 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
   const { data: projects = [] } = useProjects();
   const { data: tasksResponse } = useTasks();
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
+  const [isPriorityDropdownOpen, setIsPriorityDropdownOpen] = useState(false);
 
   const tasks = tasksResponse?.data || [];
 
   const handleProjectChange = (projectId: string) => {
     onFiltersChange({
+      ...filters,
       project_id: projectId
     });
     setIsProjectDropdownOpen(false);
   };
 
+  const handlePriorityChange = (priority: number | undefined) => {
+    onFiltersChange({
+      ...filters,
+      priority: priority
+    });
+    setIsPriorityDropdownOpen(false);
+  };
+
   const clearFilters = () => {
     onFiltersChange({
-      project_id: ''
+      project_id: '',
+      priority: undefined
     });
   };
 
-  const hasActiveFilters = filters.project_id !== '';
+  const hasActiveFilters = filters.project_id !== '' || filters.priority !== undefined;
 
   // Compter les tâches par projet
   const getTasksCountByProject = (projectId: string) => {
@@ -154,6 +167,80 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
             </>
           )}
         </div>
+
+        {/* Priority Filter Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setIsPriorityDropdownOpen(!isPriorityDropdownOpen)}
+            className="flex items-center justify-between w-full sm:w-auto px-3 py-2 border border-input rounded-lg hover:bg-accent transition-colors text-sm"
+          >
+            <div className="flex items-center gap-2">
+              {filters.priority !== undefined ? (
+                <>
+                  <div
+                    className={`w-3 h-3 rounded-full ${
+                      filters.priority === 1 ? 'bg-blue-500' :
+                      filters.priority === 2 ? 'bg-green-500' :
+                      filters.priority === 3 ? 'bg-yellow-500' :
+                      filters.priority === 4 ? 'bg-red-500' :
+                      'bg-black'
+                    }`}
+                  />
+                  <span>Priorité {filters.priority}</span>
+                </>
+              ) : (
+                <span className="text-muted-foreground">Toutes les priorités</span>
+              )}
+            </div>
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          </button>
+
+          {/* Priority Dropdown */}
+          {isPriorityDropdownOpen && (
+            <>
+              <div 
+                className="fixed inset-0 z-40"
+                onClick={() => setIsPriorityDropdownOpen(false)}
+              />
+              <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg z-50 min-w-[200px]">
+                {/* Option "Toutes les priorités" */}
+                <button
+                  onClick={() => handlePriorityChange(undefined)}
+                  className={`w-full px-3 py-2 text-left hover:bg-accent transition-colors flex items-center justify-between ${
+                    filters.priority === undefined ? 'bg-accent' : ''
+                  }`}
+                >
+                  <span className="text-sm">Toutes les priorités</span>
+                  <span className="text-xs text-muted-foreground">
+                    {totalTasks} tâche{totalTasks !== 1 ? 's' : ''}
+                  </span>
+                </button>
+
+                {/* Options des priorités */}
+                {[
+                  { priority: 1, label: 'Très basse', color: 'bg-blue-500' },
+                  { priority: 2, label: 'Basse', color: 'bg-green-500' },
+                  { priority: 3, label: 'Moyenne', color: 'bg-yellow-500' },
+                  { priority: 4, label: 'Haute', color: 'bg-red-500' },
+                  { priority: 5, label: 'Très haute', color: 'bg-black' }
+                ].map(({ priority, label, color }) => (
+                  <button
+                    key={priority}
+                    onClick={() => handlePriorityChange(priority)}
+                    className={`w-full px-3 py-2 text-left hover:bg-accent transition-colors flex items-center justify-between ${
+                      filters.priority === priority ? 'bg-accent' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded-full ${color}`} />
+                      <span className="text-sm">Priorité {priority} - {label}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Active filters display */}
@@ -164,6 +251,26 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
               <span>Projet: {projects.find(p => p.id === filters.project_id)?.name}</span>
               <button
                 onClick={() => handleProjectChange('')}
+                className="ml-1 hover:bg-primary/20 rounded-full p-0.5"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+          )}
+          {filters.priority !== undefined && (
+            <div className="flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded-md text-xs">
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  filters.priority === 1 ? 'bg-blue-500' :
+                  filters.priority === 2 ? 'bg-green-500' :
+                  filters.priority === 3 ? 'bg-yellow-500' :
+                  filters.priority === 4 ? 'bg-red-500' :
+                  'bg-black'
+                }`}
+              />
+              <span>Priorité {filters.priority}</span>
+              <button
+                onClick={() => handlePriorityChange(undefined)}
                 className="ml-1 hover:bg-primary/20 rounded-full p-0.5"
               >
                 <X className="w-3 h-3" />

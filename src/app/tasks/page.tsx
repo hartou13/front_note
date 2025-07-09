@@ -15,6 +15,7 @@ export default function TasksPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     project_id: '',
+    priority: undefined as number | undefined,
   });
 
   // Récupérer toutes les tâches sans filtres
@@ -40,6 +41,11 @@ export default function TasksPage() {
       (task.description && task.description.toLowerCase().includes(searchLower)) ||
       task.project.name.toLowerCase().includes(searchLower)
     );
+  };
+
+  // Fonction pour vérifier si une tâche correspond au filtre de priorité
+  const taskMatchesPriority = (task: Task, priority: number): boolean => {
+    return task.priority === priority;
   };
 
   // Fonction pour vérifier si une tâche ou ses sous-tâches déjà chargées correspondent à la recherche
@@ -68,6 +74,27 @@ export default function TasksPage() {
     return false;
   };
 
+  // Fonction pour vérifier si une tâche ou ses sous-tâches déjà chargées correspondent au filtre de priorité
+  const taskOrLoadedDaughtersMatchPriority = (task: Task, priority: number, loadedTasks: Map<string, any>): boolean => {
+    // Vérifier la tâche elle-même
+    if (taskMatchesPriority(task, priority)) {
+      return true;
+    }
+    
+    // Vérifier les sous-tâches déjà chargées en cache
+    const taskWithDaughters = loadedTasks.get(task.id);
+    if (taskWithDaughters?.daughters && taskWithDaughters.daughters.length > 0) {
+      // Vérifier récursivement chaque sous-tâche déjà chargée
+      for (const daughter of taskWithDaughters.daughters) {
+        if (taskMatchesPriority(daughter, priority) || taskOrLoadedDaughtersMatchPriority(daughter, priority, loadedTasks)) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  };
+
   // Filtrer les tâches par projet (frontend) - mémorisé avec useMemo
   const projectFilteredTasks = useMemo(() => {
     return filters.project_id 
@@ -86,22 +113,35 @@ export default function TasksPage() {
 
   // Effet pour mettre à jour la recherche de manière synchrone
   useEffect(() => {
-    if (!searchTerm) {
-      setSearchFilteredTasks(projectFilteredTasks);
-      return;
-    }
+    let filteredTasks = projectFilteredTasks;
 
-    const searchLower = searchTerm.toLowerCase();
-    const matchingTasks: Task[] = [];
+    // Appliquer le filtre de recherche
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      const matchingTasks: Task[] = [];
 
-    for (const task of projectFilteredTasks) {
-      if (taskOrLoadedDaughtersMatchSearch(task, searchLower, loadedTasksCache)) {
-        matchingTasks.push(task);
+      for (const task of filteredTasks) {
+        if (taskOrLoadedDaughtersMatchSearch(task, searchLower, loadedTasksCache)) {
+          matchingTasks.push(task);
+        }
       }
+      filteredTasks = matchingTasks;
     }
 
-    setSearchFilteredTasks(matchingTasks);
-  }, [searchTerm, projectFilteredTasks, loadedTasksCache]);
+    // Appliquer le filtre de priorité
+    if (filters.priority !== undefined) {
+      const matchingTasks: Task[] = [];
+
+      for (const task of filteredTasks) {
+        if (taskOrLoadedDaughtersMatchPriority(task, filters.priority!, loadedTasksCache)) {
+          matchingTasks.push(task);
+        }
+      }
+      filteredTasks = matchingTasks;
+    }
+
+    setSearchFilteredTasks(filteredTasks);
+  }, [searchTerm, filters.priority, projectFilteredTasks, loadedTasksCache]);
 
   // Organiser les tâches par statut
   const tasksByStatus = {

@@ -23,6 +23,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
     name: '',
     description: '',
     project_id: '',
+    priority: 3,
     status: 'todo' as 'todo' | 'waiting' | 'in_progress' | 'done'
   });
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
@@ -40,6 +41,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
         name: task.name,
         description: task.description || '',
         project_id: task.project_id,
+        priority: task.priority,
         status: taskStatus
       });
       setIsProjectDropdownOpen(false);
@@ -61,6 +63,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
           name: formData.name.trim(),
           description: formData.description.trim(),
           project_id: formData.project_id,
+          priority: formData.priority,
           status: formData.status
         }
       });
@@ -143,6 +146,26 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
               placeholder="Entrez une description (optionnel)"
               disabled={updateTaskMutation.isPending}
             />
+          </div>
+
+          {/* Priority */}
+          <div>
+            <label htmlFor="priority" className="block text-sm font-medium text-foreground mb-2">
+              Priorité
+            </label>
+            <select
+              id="priority"
+              value={formData.priority}
+              onChange={(e) => setFormData(prev => ({ ...prev, priority: parseInt(e.target.value) }))}
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              disabled={updateTaskMutation.isPending}
+            >
+              <option value={1}>1 - Très basse</option>
+              <option value={2}>2 - Basse</option>
+              <option value={3}>3 - Moyenne</option>
+              <option value={4}>4 - Haute</option>
+              <option value={5}>5 - Très haute</option>
+            </select>
           </div>
 
           {/* Project */}

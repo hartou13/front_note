@@ -24,7 +24,8 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    project_id: ''
+    project_id: '',
+    priority: 3
   });
   const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false);
 
@@ -37,7 +38,8 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
       setFormData({
         name: '',
         description: '',
-        project_id: defaultProjectId || (projects.length > 0 ? projects[0].id : '')
+        project_id: defaultProjectId || (projects.length > 0 ? projects[0].id : ''),
+        priority: 3
       });
       setIsProjectDropdownOpen(false);
     }
@@ -56,6 +58,7 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
         description: formData.description.trim(),
         project_id: formData.project_id,
         mother_task_id: defaultMotherTaskId,
+        priority: formData.priority,
         status: 'todo' // Par défaut, toutes les nouvelles tâches sont "À faire"
       });
       
@@ -132,6 +135,26 @@ export const TaskCreateModal: React.FC<TaskCreateModalProps> = ({
               placeholder="Entrez une description (optionnel)"
               disabled={createTaskMutation.isPending}
             />
+          </div>
+
+          {/* Priority */}
+          <div>
+            <label htmlFor="priority" className="block text-sm font-medium text-foreground mb-2">
+              Priorité
+            </label>
+            <select
+              id="priority"
+              value={formData.priority}
+              onChange={(e) => setFormData(prev => ({ ...prev, priority: parseInt(e.target.value) }))}
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              disabled={createTaskMutation.isPending}
+            >
+              <option value={1}>1 - Très basse</option>
+              <option value={2}>2 - Basse</option>
+              <option value={3}>3 - Moyenne</option>
+              <option value={4}>4 - Haute</option>
+              <option value={5}>5 - Très haute</option>
+            </select>
           </div>
 
           {/* Project */}

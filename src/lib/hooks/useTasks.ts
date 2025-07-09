@@ -16,6 +16,7 @@ export interface Task {
   name: string;
   project_id: string;
   status: number;
+  priority: number;
   updated_at: string;
   project: Project;
 }
@@ -85,6 +86,7 @@ interface CreateTaskData {
   description: string;
   project_id: string;
   mother_task_id?: string | null;
+  priority?: number;
   status?: TaskStatusString;
 }
 
@@ -93,6 +95,7 @@ interface UpdateTaskData {
   description?: string;
   project_id?: string;
   mother_task_id?: string | null;
+  priority?: number;
   status?: TaskStatusString;
 }
 
