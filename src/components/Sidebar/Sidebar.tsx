@@ -1,22 +1,23 @@
 'use client';
 
 import {
-  ChevronDown,
-  ChevronRight,
-  Circle,
-  FileText,
-  FolderOpen,
-  Home,
-  LogIn,
-  Menu,
-  PocketKnife,
-  Settings,
-  Shield,
-  Sliders,
-  Sparkles,
-  Tag,
-  User,
-  X
+    CheckSquare,
+    ChevronDown,
+    ChevronRight,
+    Circle,
+    FileText,
+    FolderOpen,
+    Home,
+    LogIn,
+    Menu,
+    PocketKnife,
+    Settings,
+    Shield,
+    Sliders,
+    Sparkles,
+    Tag,
+    User,
+    X
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -39,7 +40,8 @@ const iconMap = {
   FileText,
   PocketKnife,
   Sparkles,
-  Tag
+  Tag,
+  CheckSquare
 } as const;
 
 interface SidebarProps {

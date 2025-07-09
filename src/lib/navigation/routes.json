@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2025-06-25T15:26:14.477Z",
+  "generatedAt": "2025-07-07T15:57:38.859Z",
   "routes": [
     {
       "path": "/",
@@ -38,12 +38,6 @@
       "isProtected": true
     },
     {
-      "path": "/tag",
-      "hasPage": true,
-      "directory": "tag",
-      "isProtected": true
-    },
-    {
       "path": "/settings",
       "hasPage": false,
       "directory": "settings",
@@ -61,6 +55,18 @@
           "isProtected": true
         }
       ],
+      "isProtected": true
+    },
+    {
+      "path": "/tag",
+      "hasPage": true,
+      "directory": "tag",
+      "isProtected": true
+    },
+    {
+      "path": "/tasks",
+      "hasPage": true,
+      "directory": "tasks",
       "isProtected": true
     }
   ]

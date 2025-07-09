@@ -45,6 +45,13 @@ export const pageMetadata: Record<string, PageMetadata> = {
     section: 'Principal',
     requiresAuth: true,
   },
+  '/tasks': {
+    title: 'To-do',
+    icon: 'CheckSquare',
+    order: 6,
+    section: 'Principal',
+    requiresAuth: true,
+  },
   '/settings/preferences': {
     title: 'Préférences',
     icon: 'Settings',

@@ -66,6 +66,7 @@ interface NotesFilters {
   page?: number;
   project_id?: string;
   tag_ids?: string[];
+  query?: string;
 }
 
 // Fonctions API
@@ -91,6 +92,10 @@ const fetchNotes = async (filters: NotesFilters = {}): Promise<NotesResponse> =>
     filters.tag_ids.forEach(tagId => {
       params.append('tag_ids', tagId);
     });
+  }
+  
+  if (filters.query && filters.query.trim() !== '') {
+    params.append('query', filters.query.trim());
   }
 
   const url = getApiUrl('/note') + (params.toString() ? `?${params.toString()}` : '');

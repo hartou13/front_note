@@ -21,11 +21,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   // Charger les données utilisateur depuis localStorage
   useEffect(() => {
-    const firstName = localStorage.getItem('first_name');
+    const firstName = localStorage.getItem('firstName');
     const storedName = localStorage.getItem('firstName');
     
     if (firstName) {
-      setUserInitial(firstName.charAt(0));
+      setUserInitial(firstName.charAt(0).toUpperCase());
     }
     if (storedName) {
       setUserName(storedName);

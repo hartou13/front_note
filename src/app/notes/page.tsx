@@ -4,13 +4,14 @@ import { EmptyNotesState } from '@/components/Notes/EmptyNotesState';
 import { NotesCalendarView } from '@/components/Notes/NotesCalendarView';
 import { NotesListView } from '@/components/Notes/NotesListView';
 import { useTags } from '@/lib/hooks/useTags';
-import { CalendarDays, List, Plus } from 'lucide-react';
+import { CalendarDays, Filter, List, Plus, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { AppLayout } from '../../components/Layout/AppLayout';
 import { NoteDeleteModal } from '../../components/Notes/NoteDeleteModal';
 import { NoteEditModal } from '../../components/Notes/NoteEditModal';
 import { NotesFilters } from '../../components/Notes/NotesFilters';
+import { Button } from '../../components/UI/button';
 import { Note, useNotes } from '../../lib/hooks/useNotes';
 import { useProjects } from '../../lib/hooks/useProjects';
 import { truncateHtmlContent } from '../../lib/utils';
@@ -31,15 +32,22 @@ export default function NotesPage() {
   const [allNotes, setAllNotes] = useState<Note[]>([]);
   const [hasMorePages, setHasMorePages] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const now = new Date();
+    return { year: now.getFullYear(), month: now.getMonth() };
+  });
 
   const router = useRouter();
   
-  // Construire les filtres pour l'API - pagination + projet + tags
+  // Construire les filtres pour l'API - pagination + projet + tags + query
   const filters = useMemo(() => ({
     page: currentPage,
     project_id: selectedProjectFilter || undefined,
     tag_ids: selectedTags.length > 0 ? selectedTags : undefined,
-  }), [currentPage, selectedProjectFilter, selectedTags]);
+    query: searchTerm.trim() || undefined,
+  }), [currentPage, selectedProjectFilter, selectedTags, searchTerm]);
 
   // Clé de requête stable pour React Query
   const queryKey = useMemo(
@@ -48,9 +56,10 @@ export default function NotesPage() {
       currentPage,
       selectedProjectFilter || '',
       JSON.stringify([...selectedTags].sort()), // Clé stable pour les tags
+      searchTerm,
       refreshKey,
     ],
-    [currentPage, selectedProjectFilter, selectedTags, refreshKey]
+    [currentPage, selectedProjectFilter, selectedTags, searchTerm, refreshKey]
   );
 
   const { data: notesResponse, isLoading: notesLoading, error } = useNotes(filters, queryKey);
@@ -74,11 +83,11 @@ export default function NotesPage() {
     }
   }, [notesResponse, currentPage]);
 
-  // Réinitialiser la pagination quand le filtre projet change
+  // Réinitialiser la pagination quand les filtres changent
   useEffect(() => {
     setCurrentPage(0);
     setAllNotes([]);
-  }, [selectedProjectFilter, selectedTags]);
+  }, [selectedProjectFilter, selectedTags, searchTerm]);
 
   useEffect(() => {
     // Vérifier si l'utilisateur est connecté
@@ -156,6 +165,7 @@ export default function NotesPage() {
   const clearAllFilters = () => {
     setSelectedProjectFilter('');
     setSelectedTags([]);
+    setSearchTerm('');
     setRefreshKey(prev => prev + 1); // Force refetch
   };
 
@@ -167,7 +177,6 @@ export default function NotesPage() {
     event.stopPropagation();
     event.preventDefault();
     setOpenMenuId(openMenuId === noteId ? null : noteId);
-
   };
 
   const handleEdit = (note: Note, event: React.MouseEvent) => {
@@ -200,31 +209,19 @@ export default function NotesPage() {
   // Fermer le menu quand on clique ailleurs
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Element;
-      // Vérifier si le clic est en dehors du menu et du bouton
-      if (!target.closest('.note-menu-button') && !target.closest('.note-context-menu')) {
+      if (openMenuId) {
         setOpenMenuId(null);
       }
     };
-    
-    if (openMenuId) {
-      // Ajouter l'écouteur immédiatement
-      document.addEventListener('click', handleClickOutside);
-      
-      return () => document.removeEventListener('click', handleClickOutside);
-    }
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
   }, [openMenuId]);
 
-  // Fonctions pour la vue calendrier
   const getCurrentMonth = () => {
     const now = new Date();
-    return {
-      year: now.getFullYear(),
-      month: now.getMonth()
-    };
+    return { year: now.getFullYear(), month: now.getMonth() };
   };
-
-  const [currentMonth, setCurrentMonth] = useState(getCurrentMonth());
 
   const getDaysInMonth = (year: number, month: number) => {
     return new Date(year, month + 1, 0).getDate();
@@ -278,16 +275,17 @@ export default function NotesPage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6 p-4 sm:p-6">
+      <div className="container mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Notes</h1>
-            <p className="text-muted-foreground">
+            <h1 className="text-3xl font-bold text-foreground">Notes</h1>
+            <p className="text-muted-foreground mt-1">
               {notesResponse?.pagination.total || 0} note{(notesResponse?.pagination.total || 0) !== 1 ? 's' : ''}
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          
+          <div className="flex items-center gap-2">
             {/* View Mode Toggle */}
             <div className="flex items-center bg-muted/50 rounded-lg p-1">
               <button
@@ -316,33 +314,60 @@ export default function NotesPage() {
               </button>
             </div>
             
-            <button
+            <Button
               onClick={() => setIsCreateModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors w-full sm:w-auto"
+              className="flex items-center gap-2"
             >
               <Plus className="w-4 h-4" />
               Nouvelle note
-            </button>
+            </Button>
           </div>
         </div>
 
-        {/* Filtres */}
-        <NotesFilters
-          projects={projects || []}
-          tags={tags}
-          selectedProjectFilter={selectedProjectFilter}
-          selectedTags={selectedTags}
-          isFilterDropdownOpen={isFilterDropdownOpen}
-          isTagDropdownOpen={isTagDropdownOpen}
-          onProjectFilterChange={handleFilterSelect}
-          onTagToggle={handleTagToggle}
-          onTagRemove={handleTagRemove}
-          onClearAllFilters={clearAllFilters}
-          onFilterDropdownToggle={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-          onTagDropdownToggle={() => setIsTagDropdownOpen(!isTagDropdownOpen)}
-          totalNotes={notesResponse?.pagination.total || 0}
-          getNotesCountByProject={getNotesCountByProject}
-        />
+        {/* Search and Filters */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          {/* Search */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Rechercher une note..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+
+          {/* Filters Toggle */}
+          <Button
+            onClick={() => setShowFilters(!showFilters)}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <Filter className="w-4 h-4" />
+            Filtres
+          </Button>
+        </div>
+
+        {/* Filters Panel */}
+        {showFilters && (
+          <NotesFilters
+            projects={projects || []}
+            tags={tags}
+            selectedProjectFilter={selectedProjectFilter}
+            selectedTags={selectedTags}
+            isFilterDropdownOpen={isFilterDropdownOpen}
+            isTagDropdownOpen={isTagDropdownOpen}
+            onProjectFilterChange={handleFilterSelect}
+            onTagToggle={handleTagToggle}
+            onTagRemove={handleTagRemove}
+            onClearAllFilters={clearAllFilters}
+            onFilterDropdownToggle={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+            onTagDropdownToggle={() => setIsTagDropdownOpen(!isTagDropdownOpen)}
+            totalNotes={notesResponse?.pagination.total || 0}
+            getNotesCountByProject={getNotesCountByProject}
+          />
+        )}
 
         {/* Messages d'erreur */}
         {error && (
@@ -365,7 +390,7 @@ export default function NotesPage() {
           <>
             {allNotes.length === 0 ? (
               <EmptyNotesState
-                hasFilters={!!selectedProjectFilter || selectedTags.length > 0}
+                hasFilters={!!selectedProjectFilter || selectedTags.length > 0 || !!searchTerm}
                 onCreateNote={() => setIsCreateModalOpen(true)}
               />
             ) : viewMode === 'list' ? (
