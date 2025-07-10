@@ -102,7 +102,7 @@ export default function TasksPage() {
       : allTasks;
   }, [allTasks, filters.project_id]);
 
-  // Filtrer les tâches par recherche (frontend avec recherche dans le cache)
+  // Filtrer les tâches par recherche et priorité (frontend avec recherche dans le cache)
   const [searchFilteredTasks, setSearchFilteredTasks] = useState<Task[]>(projectFilteredTasks);
   const [loadedTasksCache, setLoadedTasksCache] = useState<Map<string, any>>(new Map());
 
@@ -111,7 +111,12 @@ export default function TasksPage() {
     setLoadedTasksCache(prev => new Map(prev).set(taskId, taskWithDaughters));
   }, []);
 
-  // Effet pour mettre à jour la recherche de manière synchrone
+  // Mémoriser les filtres pour éviter les re-rendus inutiles
+  const memoizedFilters = useMemo(() => ({
+    priority: filters.priority
+  }), [filters.priority]);
+
+  // Effet pour mettre à jour la recherche et le filtrage de manière synchrone
   useEffect(() => {
     let filteredTasks = projectFilteredTasks;
 
@@ -129,11 +134,11 @@ export default function TasksPage() {
     }
 
     // Appliquer le filtre de priorité
-    if (filters.priority !== undefined) {
+    if (memoizedFilters.priority !== undefined) {
       const matchingTasks: Task[] = [];
 
       for (const task of filteredTasks) {
-        if (taskOrLoadedDaughtersMatchPriority(task, filters.priority!, loadedTasksCache)) {
+        if (taskOrLoadedDaughtersMatchPriority(task, memoizedFilters.priority!, loadedTasksCache)) {
           matchingTasks.push(task);
         }
       }
@@ -141,7 +146,7 @@ export default function TasksPage() {
     }
 
     setSearchFilteredTasks(filteredTasks);
-  }, [searchTerm, filters.priority, projectFilteredTasks, loadedTasksCache]);
+  }, [searchTerm, memoizedFilters.priority, projectFilteredTasks, loadedTasksCache]);
 
   // Organiser les tâches par statut
   const tasksByStatus = {
