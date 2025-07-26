@@ -20,7 +20,7 @@ pipeline {
                     echo 'Stopping existing production containers...'
                     sh '''
                         # Stop and remove existing containers with production profile
-                        docker-compose --profile ${PRODUCTION_PROFILE} down || true
+                        docker-compose down || true
                         
                         # Remove any dangling containers
                         docker container prune -f || true
