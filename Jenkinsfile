@@ -5,6 +5,7 @@ pipeline {
         DOCKER_COMPOSE_FILE = 'docker-compose.yml'
         PRODUCTION_PROFILE = 'production'
         APP_SERVICE = 'app-prod'
+        FRONT_ENV = credentials('vela-front-end-env')
     }
     
     stages {
@@ -43,7 +44,15 @@ pipeline {
                 }
             }
         }
-        
+
+        stage('Write .env file') {
+            steps {
+                sh '''
+                echo "$FRONT_ENV" > .env
+                '''
+            }
+        }
+
         stage('Build Production Image') {
             steps {
                 script {
