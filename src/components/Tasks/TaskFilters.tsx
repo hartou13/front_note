@@ -179,11 +179,12 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
                 <>
                   <div
                     className={`w-3 h-3 rounded-full ${
-                      filters.priority === 1 ? 'bg-blue-500' :
-                      filters.priority === 2 ? 'bg-green-500' :
-                      filters.priority === 3 ? 'bg-yellow-500' :
-                      filters.priority === 4 ? 'bg-red-500' :
-                      'bg-black'
+                      filters.priority === 1 ? 'bg-gray-500' :
+                      filters.priority === 2 ? 'bg-blue-500' :
+                      filters.priority === 3 ? 'bg-green-500' :
+                      filters.priority === 4 ? 'bg-yellow-500' :
+                      filters.priority === 5 ? 'bg-red-500' :
+                      'bg-gray-500'
                     }`}
                   />
                   <span>Priorité {filters.priority}</span>
@@ -218,11 +219,11 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
 
                 {/* Options des priorités */}
                 {[
-                  { priority: 1, label: 'Très basse', color: 'bg-blue-500' },
-                  { priority: 2, label: 'Basse', color: 'bg-green-500' },
-                  { priority: 3, label: 'Moyenne', color: 'bg-yellow-500' },
-                  { priority: 4, label: 'Haute', color: 'bg-red-500' },
-                  { priority: 5, label: 'Très haute', color: 'bg-black' }
+                  { priority: 1, label: 'Très basse', color: 'bg-gray-500' },
+                  { priority: 2, label: 'Basse', color: 'bg-blue-500' },
+                  { priority: 3, label: 'Moyenne', color: 'bg-green-500' },
+                  { priority: 4, label: 'Haute', color: 'bg-yellow-500' },
+                  { priority: 5, label: 'Très haute', color: 'bg-red-500' }
                 ].map(({ priority, label, color }) => (
                   <button
                     key={priority}
@@ -261,11 +262,12 @@ export const TaskFilters: React.FC<TaskFiltersProps> = ({
             <div className="flex items-center gap-1 px-2 py-1 bg-primary/10 text-primary rounded-md text-xs">
               <div
                 className={`w-2 h-2 rounded-full ${
-                  filters.priority === 1 ? 'bg-blue-500' :
-                  filters.priority === 2 ? 'bg-green-500' :
-                  filters.priority === 3 ? 'bg-yellow-500' :
-                  filters.priority === 4 ? 'bg-red-500' :
-                  'bg-black'
+                  filters.priority === 1 ? 'bg-gray-500' :
+                  filters.priority === 2 ? 'bg-blue-500' :
+                  filters.priority === 3 ? 'bg-green-500' :
+                  filters.priority === 4 ? 'bg-yellow-500' :
+                  filters.priority === 5 ? 'bg-red-500' :
+                  'bg-gray-500'
                 }`}
               />
               <span>Priorité {filters.priority}</span>

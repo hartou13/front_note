@@ -96,7 +96,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-background border border-border rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="bg-background border border-border rounded-lg shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-lg font-semibold text-foreground">
@@ -132,40 +132,78 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
             />
           </div>
 
-          {/* Description */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-foreground mb-2">
-              Description
-            </label>
-            <textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              rows={3}
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
-              placeholder="Entrez une description (optionnel)"
-              disabled={updateTaskMutation.isPending}
-            />
-          </div>
+          {/* Status and Priority */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Status */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Statut
+              </label>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                  className="w-full flex items-center justify-between px-3 py-2 border border-border rounded-lg bg-background text-foreground hover:bg-accent transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  disabled={updateTaskMutation.isPending}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={getStatusColor(formData.status)}>
+                      {getStatusLabel(formData.status)}
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
 
-          {/* Priority */}
-          <div>
-            <label htmlFor="priority" className="block text-sm font-medium text-foreground mb-2">
-              Priorité
-            </label>
-            <select
-              id="priority"
-              value={formData.priority}
-              onChange={(e) => setFormData(prev => ({ ...prev, priority: parseInt(e.target.value) }))}
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-              disabled={updateTaskMutation.isPending}
-            >
-              <option value={1}>1 - Très basse</option>
-              <option value={2}>2 - Basse</option>
-              <option value={3}>3 - Moyenne</option>
-              <option value={4}>4 - Haute</option>
-              <option value={5}>5 - Très haute</option>
-            </select>
+                {/* Status Dropdown */}
+                {isStatusDropdownOpen && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-40"
+                      onClick={() => setIsStatusDropdownOpen(false)}
+                    />
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg z-50">
+                      {[
+                        { status: 'todo' as const, label: getStatusLabel('todo'), color: getStatusColor('todo') },
+                        { status: 'waiting' as const, label: getStatusLabel('waiting'), color: getStatusColor('waiting') },
+                        { status: 'in_progress' as const, label: getStatusLabel('in_progress'), color: getStatusColor('in_progress') },
+                        { status: 'done' as const, label: getStatusLabel('done'), color: getStatusColor('done') }
+                      ].map(({ status, label, color }) => (
+                        <button
+                          key={status}
+                          type="button"
+                          onClick={() => handleStatusChange(status)}
+                          className="w-full px-3 py-2 text-left hover:bg-accent transition-colors"
+                        >
+                          <span className={`text-sm font-medium ${color}`}>
+                            {label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Priority */}
+            <div>
+              <label htmlFor="priority" className="block text-sm font-medium text-foreground mb-2">
+                Priorité
+              </label>
+              <select
+                id="priority"
+                value={formData.priority}
+                onChange={(e) => setFormData(prev => ({ ...prev, priority: parseInt(e.target.value) }))}
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                disabled={updateTaskMutation.isPending}
+              >
+                <option value={1}>1 - Très basse</option>
+                <option value={2}>2 - Basse</option>
+                <option value={3}>3 - Moyenne</option>
+                <option value={4}>4 - Haute</option>
+                <option value={5}>5 - Très haute</option>
+              </select>
+            </div>
           </div>
 
           {/* Project */}
@@ -239,55 +277,20 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({
             </div>
           </div>
 
-          {/* Status */}
+          {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-foreground mb-2">
-              Statut
+            <label htmlFor="description" className="block text-sm font-medium text-foreground mb-2">
+              Description
             </label>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                className="w-full flex items-center justify-between px-3 py-2 border border-border rounded-lg bg-background text-foreground hover:bg-accent transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                disabled={updateTaskMutation.isPending}
-              >
-                <div className="flex items-center gap-2">
-                  <span className={getStatusColor(formData.status)}>
-                    {getStatusLabel(formData.status)}
-                  </span>
-                </div>
-                <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              {/* Status Dropdown */}
-              {isStatusDropdownOpen && (
-                <>
-                  <div 
-                    className="fixed inset-0 z-40"
-                    onClick={() => setIsStatusDropdownOpen(false)}
-                  />
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-lg z-50">
-                    {[
-                      { status: 'todo' as const, label: getStatusLabel('todo'), color: getStatusColor('todo') },
-                      { status: 'waiting' as const, label: getStatusLabel('waiting'), color: getStatusColor('waiting') },
-                      { status: 'in_progress' as const, label: getStatusLabel('in_progress'), color: getStatusColor('in_progress') },
-                      { status: 'done' as const, label: getStatusLabel('done'), color: getStatusColor('done') }
-                    ].map(({ status, label, color }) => (
-                      <button
-                        key={status}
-                        type="button"
-                        onClick={() => handleStatusChange(status)}
-                        className="w-full px-3 py-2 text-left hover:bg-accent transition-colors"
-                      >
-                        <span className={`text-sm font-medium ${color}`}>
-                          {label}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
+            <textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              rows={3}
+              className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+              placeholder="Entrez une description (optionnel)"
+              disabled={updateTaskMutation.isPending}
+            />
           </div>
 
           {/* Error display */}

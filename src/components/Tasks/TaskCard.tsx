@@ -1,12 +1,30 @@
 'use client';
 
-import { CheckCircle, ChevronDown, ChevronRight, Circle, Edit, FileText, MoreVertical, Plus, Trash2 } from 'lucide-react';
+import { CheckCircle, ChevronDown, ChevronRight, Circle, Edit, MoreVertical, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getStatusColor, getStatusLabel, numberToStatus, Task, useTask, useUpdateTask } from '../../lib/hooks/useTasks';
 import { Button } from '../UI/button';
 import { TaskCreateModal } from './TaskCreateModal';
 import { TaskDeleteModal } from './TaskDeleteModal';
 import { TaskEditModal } from './TaskEditModal';
+import { TaskViewModal } from './TaskViewModal';
+
+// Utility function to determine text color based on background color
+const getContrastColor = (hexColor: string): string => {
+  // Remove # if present
+  const hex = hexColor.replace('#', '');
+  
+  // Convert to RGB
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+  
+  // Calculate luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  
+  // Return white for dark backgrounds, black for light backgrounds
+  return luminance > 0.5 ? '#000000' : '#ffffff';
+};
 
 interface TaskCardProps {
   task: Task;
@@ -19,6 +37,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isSubTask = false, lev
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showViewModal, setShowViewModal] = useState(false);
   const [showDaughters, setShowDaughters] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   
@@ -61,8 +80,23 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isSubTask = false, lev
     setShowCreateModal(false);
   };
 
+  const handleViewEdit = () => {
+    setShowViewModal(false);
+    setShowEditModal(true);
+  };
+
   const handleTaskClick = () => {
     setShowDaughters(!showDaughters);
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't trigger if clicking on interactive elements
+    if ((e.target as HTMLElement).closest('button') || 
+        (e.target as HTMLElement).closest('[role="button"]') ||
+        (e.target as HTMLElement).closest('.dropdown-backdrop')) {
+      return;
+    }
+    setShowViewModal(true);
   };
 
   // Icône selon le statut
@@ -86,12 +120,13 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isSubTask = false, lev
   return (
     <>
       <div 
-        className="flex items-center justify-between p-3 border border-border rounded-lg hover:shadow-sm transition-shadow"
+        className="flex items-center justify-between p-3 border border-border rounded-lg hover:shadow-sm transition-shadow cursor-pointer"
         style={{ 
           borderLeft: `4px solid ${task.project.color}`,
           backgroundColor: `${task.project.color}10`,
           marginLeft: `${paddingLeft}px`
         }}
+        onClick={handleCardClick}
       >
         {/* Left side - Status toggle and task info */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -105,28 +140,39 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isSubTask = false, lev
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="font-medium text-foreground truncate text-sm">
+              <h3 className="font-medium text-foreground truncate text-xs">
                 {task.name}
               </h3>
-              {task.description && (
-                <FileText className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-              )}
               {/* Priority indicator */}
               <div className="flex items-center gap-1">
                 <div
                   className={`w-2 h-2 rounded-full ${
-                    task.priority === 1 ? 'bg-blue-500' :
-                    task.priority === 2 ? 'bg-green-500' :
-                    task.priority === 3 ? 'bg-yellow-500' :
-                    task.priority === 4 ? 'bg-red-500' :
-                    'bg-black'
+                    task.priority === 1 ? 'bg-gray-500' :
+                    task.priority === 2 ? 'bg-blue-500' :
+                    task.priority === 3 ? 'bg-green-500' :
+                    task.priority === 4 ? 'bg-yellow-500' :
+                    task.priority === 5 ? 'bg-red-500' :
+                    'bg-gray-500'
                   }`}
                 />
               </div>
             </div>
-            <span className={`text-xs ${statusColorClass}`}>
-              {statusLabel}
-            </span>
+            <div className="flex items-center gap-2 mt-1">
+              <span className={`text-xs ${statusColorClass}`}>
+                {statusLabel}
+              </span>
+              {/* Project badge */}
+              <span 
+                className="text-xs px-2 py-0.5 rounded-full text-white font-medium truncate max-w-24"
+                style={{ 
+                  backgroundColor: task.project.color,
+                  color: getContrastColor(task.project.color)
+                }}
+                title={task.project.name}
+              >
+                {task.project.name}
+              </span>
+            </div>
             {/* Description when expanded */}
             {showDaughters && task.description && (
               <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">
@@ -170,7 +216,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isSubTask = false, lev
             {showDropdown && (
               <>
                 <div 
-                  className="fixed inset-0 z-40"
+                  className="fixed inset-0 z-40 dropdown-backdrop"
                   onClick={() => setShowDropdown(false)}
                 />
                 <div className="absolute right-0 top-full mt-1 bg-popover border border-border rounded-lg shadow-lg z-50 min-w-32">
@@ -261,6 +307,16 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, isSubTask = false, lev
           isOpen={showDeleteModal}
           onClose={() => setShowDeleteModal(false)}
           onSuccess={handleDeleteSuccess}
+        />
+      )}
+
+      {/* View Modal */}
+      {showViewModal && (
+        <TaskViewModal
+          task={task}
+          isOpen={showViewModal}
+          onClose={() => setShowViewModal(false)}
+          onEdit={handleViewEdit}
         />
       )}
     </>
