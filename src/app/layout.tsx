@@ -14,18 +14,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Determine icon based on environment
+const isDevelopment = process.env.NODE_ENV === 'development';
+const iconPath = isDevelopment ? '/sparkles-white.png' : '/icon.svg';
+
 export const metadata: Metadata = {
   title: "Vela",
   description: "Application de gestion de notes et projets",
   icons: {
     icon: [
       {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
+        url: iconPath,
+        type: isDevelopment ? 'image/png' : 'image/svg+xml',
       },
     ],
-    shortcut: '/icon.svg',
-    apple: '/icon.svg',
+    shortcut: iconPath,
+    apple: iconPath,
   },
 };
 
