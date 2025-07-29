@@ -1,18 +1,22 @@
 'use client';
 
-import { Filter, Plus, Search } from 'lucide-react';
+import { Calendar, Filter, List, Plus, Search } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppLayout } from '../../components/Layout/AppLayout';
 import { TaskCard } from '../../components/Tasks/TaskCard';
 import { TaskCreateModal } from '../../components/Tasks/TaskCreateModal';
 import { TaskFilters } from '../../components/Tasks/TaskFilters';
+import { TaskHistoryCalendar } from '../../components/Tasks/TaskHistoryCalendar';
 import { Button } from '../../components/UI/button';
 import { numberToStatus, Task, useTasks } from '../../lib/hooks/useTasks';
+
+type ViewMode = 'kanban' | 'history';
 
 export default function TasksPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('kanban');
   const [filters, setFilters] = useState({
     project_id: '',
     priority: undefined as number | undefined,
@@ -177,7 +181,7 @@ export default function TasksPage() {
         <div className="container mx-auto p-6">
           <div className="bg-destructive/10 border border-destructive rounded-lg p-4">
             <p className="text-destructive">
-              ❌ Erreur lors du chargement des tâches : {error.message}
+              ❌ Erreur lors du chargement des tâches : {error?.message}
             </p>
             <Button 
               onClick={() => window.location.reload()} 
@@ -215,97 +219,133 @@ export default function TasksPage() {
           </div>
         </div>
 
-        {/* Search and Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          {/* Search */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Rechercher une tâche..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-          </div>
-
-          {/* Filters Toggle */}
-          <Button
-            onClick={() => setShowFilters(!showFilters)}
-            variant="outline"
-            className="flex items-center gap-2"
+        {/* View Mode Tabs */}
+        <div className="flex border-b border-border">
+          <button
+            onClick={() => setViewMode('kanban')}
+            className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
+              viewMode === 'kanban'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
           >
-            <Filter className="w-4 h-4" />
-            Filtres
-          </Button>
+            <List className="w-4 h-4" />
+            Vue Kanban
+          </button>
+          <button
+            onClick={() => setViewMode('history')}
+            className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${
+              viewMode === 'history'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            Historique
+          </button>
         </div>
 
-        {/* Filters Panel */}
-        {showFilters && (
-          <TaskFilters
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-          />
+        {/* Search and Filters - Only show for Kanban view */}
+        {viewMode === 'kanban' && (
+          <>
+            <div className="flex flex-col sm:flex-row gap-4">
+              {/* Search */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Rechercher une tâche..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+
+              {/* Filters Toggle */}
+              <Button
+                onClick={() => setShowFilters(!showFilters)}
+                variant="outline"
+                className="flex items-center gap-2"
+              >
+                <Filter className="w-4 h-4" />
+                Filtres
+              </Button>
+            </div>
+
+            {/* Filters Panel */}
+            {showFilters && (
+              <TaskFilters
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+              />
+            )}
+          </>
         )}
 
         {/* Content */}
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        ) : searchFilteredTasks.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
-              <Plus className="w-8 h-8 text-muted-foreground" />
+        {viewMode === 'kanban' ? (
+          // Kanban View
+          isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              Aucune tâche trouvée
-            </h3>
-            <p className="text-muted-foreground mb-4">
-              {searchTerm || Object.values(filters).some(f => f !== '' && f !== undefined)
-                ? 'Aucune tâche ne correspond à vos critères de recherche.'
-                : 'Commencez par créer votre première tâche.'
-              }
-            </p>
-            {!searchTerm && !Object.values(filters).some(f => f !== '' && f !== undefined) && (
-              <Button onClick={() => setShowCreateModal(true)}>
-                Créer une tâche
-              </Button>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {statusConfig.map(({ key, label, color }) => (
-              <div key={key} className="space-y-4">
-                {/* Column Header */}
-                <div className="flex items-center justify-between">
-                  <h3 className={`font-semibold ${color}`}>
-                    {label}
-                  </h3>
-                  <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                    {tasksByStatus[key].length}
-                  </span>
-                </div>
-                
-                {/* Tasks in this status */}
-                <div className="space-y-3">
-                  {tasksByStatus[key].map((task: Task) => (
-                    <TaskCard 
-                      key={task.id} 
-                      task={task} 
-                      onTaskLoaded={addToCache}
-                    />
-                  ))}
-                  
-                  {tasksByStatus[key].length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <p className="text-sm">Aucune tâche</p>
-                    </div>
-                  )}
-                </div>
+          ) : searchFilteredTasks.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+                <Plus className="w-8 h-8 text-muted-foreground" />
               </div>
-            ))}
-          </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Aucune tâche trouvée
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                {searchTerm || Object.values(filters).some(f => f !== '' && f !== undefined)
+                  ? 'Aucune tâche ne correspond à vos critères de recherche.'
+                  : 'Commencez par créer votre première tâche.'
+                }
+              </p>
+              {!searchTerm && !Object.values(filters).some(f => f !== '' && f !== undefined) && (
+                <Button onClick={() => setShowCreateModal(true)}>
+                  Créer une tâche
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {statusConfig.map(({ key, label, color }) => (
+                <div key={key} className="space-y-4">
+                  {/* Column Header */}
+                  <div className="flex items-center justify-between">
+                    <h3 className={`font-semibold ${color}`}>
+                      {label}
+                    </h3>
+                    <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                      {tasksByStatus[key].length}
+                    </span>
+                  </div>
+                  
+                  {/* Tasks in this status */}
+                  <div className="space-y-3">
+                    {tasksByStatus[key].map((task: Task) => (
+                      <TaskCard 
+                        key={task.id} 
+                        task={task} 
+                        onTaskLoaded={addToCache}
+                      />
+                    ))}
+                    
+                    {tasksByStatus[key].length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <p className="text-sm">Aucune tâche</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        ) : (
+          // History Calendar View
+          <TaskHistoryCalendar />
         )}
 
         {/* Create Modal */}

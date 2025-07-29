@@ -19,6 +19,7 @@ export interface Task {
   priority: number;
   updated_at: string;
   project: Project;
+  finished_at?: string; // New field for completed tasks
 }
 
 export interface TasksResponse {
@@ -40,7 +41,7 @@ export type TaskStatusString = 'todo' | 'waiting' | 'in_progress' | 'done';
 // Conversion des statuts
 export const taskStatusMap: Record<TaskStatusNumber, TaskStatusString> = {
   0: 'todo',
-  25: 'waiting', 
+  25: 'waiting',
   50: 'in_progress',
   100: 'done'
 };
@@ -108,22 +109,22 @@ interface TasksFilters {
 // Fonctions API
 const fetchTasks = async (filters: TasksFilters = {}): Promise<TasksResponse> => {
   const token = localStorage.getItem('token');
-  
+
   if (!token) {
     throw new Error('Token manquant');
   }
 
   // Construire les paramètres de requête
   const params = new URLSearchParams();
-  
+
   if (filters.page !== undefined) {
     params.append('page', filters.page.toString());
   }
-  
+
   if (filters.project_id && filters.project_id !== '') {
     params.append('project_id', filters.project_id);
   }
-  
+
   if (filters.status !== undefined) {
     params.append('status', filters.status.toString());
   }
@@ -142,20 +143,20 @@ const fetchTasks = async (filters: TasksFilters = {}): Promise<TasksResponse> =>
   }
 
   const data = await response.json();
-  
+
   // Gérer les deux formats de réponse possibles
   // 1. Tableau direct de tâches
   // 2. Objet avec propriété data
   if (Array.isArray(data)) {
     return { data };
   }
-  
+
   return data;
 };
 
 const createTask = async (data: CreateTaskData): Promise<Task> => {
   const token = localStorage.getItem('token');
-  
+
   if (!token) {
     throw new Error('Token manquant');
   }
@@ -184,7 +185,7 @@ const createTask = async (data: CreateTaskData): Promise<Task> => {
 
 const updateTask = async ({ id, data }: { id: string; data: UpdateTaskData }): Promise<Task> => {
   const token = localStorage.getItem('token');
-  
+
   if (!token) {
     throw new Error('Token manquant');
   }
@@ -213,7 +214,7 @@ const updateTask = async ({ id, data }: { id: string; data: UpdateTaskData }): P
 
 const deleteTask = async (id: string): Promise<void> => {
   const token = localStorage.getItem('token');
-  
+
   if (!token) {
     throw new Error('Token manquant');
   }
@@ -294,13 +295,13 @@ export const useUpdateTask = () => {
 
         // Gérer les deux formats de réponse possibles
         if (Array.isArray(oldData)) {
-          return oldData.map(task => 
+          return oldData.map(task =>
             task.id === updatedTask.id ? updatedTask : task
           );
         } else if (oldData.data) {
           return {
             ...oldData,
-            data: oldData.data.map(task => 
+            data: oldData.data.map(task =>
               task.id === updatedTask.id ? updatedTask : task
             )
           };
@@ -320,11 +321,11 @@ export const useUpdateTask = () => {
       // Mettre à jour la tâche dans les sous-tâches des autres tâches
       queryClient.setQueriesData({ queryKey: ['task'] }, (oldData: TaskWithDaughters | undefined) => {
         if (!oldData || !oldData.daughters) return oldData;
-        
-        const updatedDaughters = oldData.daughters.map(daughter => 
+
+        const updatedDaughters = oldData.daughters.map(daughter =>
           daughter.id === updatedTask.id ? updatedTask : daughter
         );
-        
+
         if (JSON.stringify(oldData.daughters) !== JSON.stringify(updatedDaughters)) {
           return {
             ...oldData,
@@ -365,9 +366,9 @@ export const useDeleteTask = () => {
       // Supprimer la tâche des sous-tâches des autres tâches
       queryClient.setQueriesData({ queryKey: ['task'] }, (oldData: TaskWithDaughters | undefined) => {
         if (!oldData || !oldData.daughters) return oldData;
-        
+
         const updatedDaughters = oldData.daughters.filter(daughter => daughter.id !== deletedTaskId);
-        
+
         if (oldData.daughters.length !== updatedDaughters.length) {
           return {
             ...oldData,
@@ -401,7 +402,7 @@ export const useTask = (taskId: string | null) => {
       }
 
       const token = localStorage.getItem('token');
-      
+
       if (!token) {
         throw new Error('Token manquant');
       }
@@ -420,5 +421,55 @@ export const useTask = (taskId: string | null) => {
       return response.json();
     },
     enabled: !!taskId,
+  });
+};
+
+// Hook pour récupérer l'historique des tâches
+export const useTaskHistory = (month?: number, year?: number) => {
+  return useQuery({
+    queryKey: ['task-history', month, year],
+    queryFn: async (): Promise<Task[]> => {
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error('Token manquant');
+      }
+
+      // Construire les paramètres de requête
+      const params = new URLSearchParams();
+      if (month !== undefined) {
+        params.append('month', month.toString());
+      }
+      if (year !== undefined) {
+        params.append('year', year.toString());
+      }
+
+      const url = getApiUrl('/task/history') + (params.toString() ? `?${params.toString()}` : '');
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Erreur lors de la récupération de l\'historique des tâches');
+      }
+
+      const data = await response.json();
+
+      // Gérer les deux formats de réponse possibles
+      if (Array.isArray(data)) {
+        return data;
+      } else if (data.data) {
+        return data.data;
+      }
+
+      return [];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+    enabled: month !== undefined && year !== undefined, // Only fetch when month and year are provided
   });
 }; 
