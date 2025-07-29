@@ -24,7 +24,7 @@ export function TaskDayModal({ isOpen, onClose, date, tasks }: TaskDayModalProps
   };
 
   const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
+    const date = new Date(dateString+"Z");
     return date.toLocaleTimeString('fr-FR', {
       hour: '2-digit',
       minute: '2-digit'
