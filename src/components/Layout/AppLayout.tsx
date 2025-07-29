@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { useLogout } from '../../lib/hooks/useAuth';
 import { pageMetadata } from '../../lib/navigation/pageMetadata';
 import { Sidebar } from '../Sidebar/Sidebar';
+import { ThemeToggle } from '../UI/ThemeToggle';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -108,6 +109,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         isCollapsed={sidebarCollapsed}
         onMobileToggle={toggleMobileSidebar}
         onDesktopToggle={toggleDesktopSidebar}
+        onLogout={handleLogout}
       />
 
       {/* Main content area */}
@@ -152,16 +154,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
                 <span className="hidden md:block text-sm text-muted-foreground">
                   {userName}
                 </span>
+                {/* Theme toggle near username */}
+                <ThemeToggle className="text-foreground hover:text-accent-foreground" />
               </div>
-
-              {/* Logout button */}
-              <button
-                onClick={handleLogout}
-                disabled={logoutMutation.isPending}
-                className="px-3 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
-              >
-                {logoutMutation.isPending ? 'Déconnexion...' : 'Déconnexion'}
-              </button>
             </div>
           </div>
 

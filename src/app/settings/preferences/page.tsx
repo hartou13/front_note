@@ -3,10 +3,13 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { AppLayout } from '../../../components/Layout/AppLayout';
+import { ThemeToggle } from '../../../components/UI/ThemeToggle';
+import { useTheme } from '../../../lib/providers/ThemeProvider';
 
 export default function PreferencesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const { theme, setTheme, mounted } = useTheme();
 
   useEffect(() => {
     // Vérifier si l'utilisateur est connecté
@@ -45,11 +48,17 @@ export default function PreferencesPage() {
                 <label className="block text-sm font-medium text-foreground mb-2">
                   Thème
                 </label>
-                <select className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground">
-                  <option>Système</option>
-                  <option>Clair</option>
-                  <option>Sombre</option>
-                </select>
+                <div className="flex items-center space-x-4">
+                  <ThemeToggle variant="dropdown" />
+                  {mounted && (
+                    <span className="text-sm text-muted-foreground">
+                      Thème actuel : {theme === 'light' ? 'Clair' : theme === 'dark' ? 'Sombre' : 'Système'}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Le thème système suit les préférences de votre système d'exploitation
+                </p>
               </div>
               
               <div>

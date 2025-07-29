@@ -1,23 +1,23 @@
 'use client';
 
 import {
-    CheckSquare,
-    ChevronDown,
-    ChevronRight,
-    Circle,
-    FileText,
-    FolderOpen,
-    Home,
-    LogIn,
-    Menu,
-    PocketKnife,
-    Settings,
-    Shield,
-    Sliders,
-    Sparkles,
-    Tag,
-    User,
-    X
+  CheckSquare,
+  ChevronDown,
+  ChevronRight,
+  Circle,
+  FileText,
+  FolderOpen,
+  Home,
+  LogIn,
+  Menu,
+  PocketKnife,
+  Settings,
+  Shield,
+  Sliders,
+  Sparkles,
+  Tag,
+  User,
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -49,6 +49,7 @@ interface SidebarProps {
   isCollapsed: boolean;
   onMobileToggle: () => void;
   onDesktopToggle: () => void;
+  onLogout: () => void;
 }
 
 interface NavigationItemComponentProps {
@@ -149,7 +150,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isOpen, 
   isCollapsed, 
   onMobileToggle, 
-  onDesktopToggle 
+  onDesktopToggle, 
+  onLogout 
 }) => {
   const { data: navigation, isLoading, error } = useNavigation();
   const currentPath = usePathname();
@@ -241,21 +243,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ))}
       </nav>
 
-      {/* Footer - Collapse button pour desktop */}
-      <div className={`hidden lg:flex border-t border-sidebar-border p-4 ${
-        isCollapsed ? 'justify-center' : 'justify-between items-center'
+      {/* Logout button at bottom */}
+      <div className={`border-t border-sidebar-border p-4 ${
+        isCollapsed ? 'flex justify-center' : 'flex items-center justify-between'
       }`}>
         {!isCollapsed && (
-          <span className="text-xs text-sidebar-foreground/70">
-            Réduire
+          <span className="text-sm text-sidebar-foreground">
+            Déconnexion
           </span>
         )}
         <button
-          onClick={onDesktopToggle}
-          className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors"
-          title={isCollapsed ? "Étendre la sidebar" : "Réduire la sidebar"}
+          onClick={onLogout}
+          className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-sidebar-foreground"
+          title={isCollapsed ? "Déconnexion" : undefined}
         >
-          <Menu className="w-4 h-4 text-sidebar-foreground" />
+          <LogIn className="w-4 h-4" />
         </button>
       </div>
     </div>
